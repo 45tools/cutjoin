@@ -250,20 +250,47 @@
     return box("stbl", tr.raw.stsd, sttsB, ...(cttsB ? [cttsB] : []), ...(stssB ? [stssB] : []), stszB, stscB, coB);
   }
 
-  function trakBox(tr, S, id, movieTs, mediaStart, base, use64) {
+  function trakBox(tr, S, id, movieTs, mediaStart, base, use64, nowQT) {
     const mediaDur = S.reduce((a, s) => a + s.dur, 0);
     // 映像: 表示区間は [先頭の表示時刻, +全長]。音声: 先頭の無音(プライミング)分だけ短い
     const presDur = Math.max(0, tr.handler === "vide" ? mediaDur : mediaDur - mediaStart);
     const movieDur = Math.round(presDur * movieTs / tr.timescale);
     // tkhd: track_ID と duration を書き換え
-    const tk = tr.raw.tkhd.slice(), tdv = new DataView(tk.buffer), tv = tdv.getUint8(8);
+    const tk = nowQT ? patchTimes(tr.raw.tkhd, nowQT) : tr.raw.tkhd.slice(), tdv = new DataView(tk.buffer), tv = tdv.getUint8(8);
     if (tv === 1) { tdv.setUint32(8 + 20, id); setU64(tdv, 8 + 28, movieDur); }
     else { tdv.setUint32(8 + 12, id); tdv.setUint32(8 + 20, movieDur); }
     const elst = box("edts", box("elst", u32s(0, 1, movieDur, mediaStart, 0x00010000)));
-    const md = tr.raw.mdhd.slice(), mdv = new DataView(md.buffer), mv = mdv.getUint8(8);
+    const md = nowQT ? patchTimes(tr.raw.mdhd, nowQT) : tr.raw.mdhd.slice(), mdv = new DataView(md.buffer), mv = mdv.getUint8(8);
     if (mv === 1) setU64(mdv, 8 + 24, mediaDur); else mdv.setUint32(8 + 16, Math.min(mediaDur, 0xffffffff));
     const minf = box("minf", ...(tr.raw.xmhd ? [tr.raw.xmhd] : []), ...(tr.raw.dinf ? [tr.raw.dinf] : []), sampleTable(tr, S, base, use64));
     return { box: box("trak", tk, elst, box("mdia", md, tr.raw.hdlr, minf)), movieDur };
+  }
+
+  // 保存日時を「今」にする（写真アプリで一番新しい所に並ぶ）
+  const QT_EPOCH = 2082844800;
+  function patchTimes(box, nowQT) { // mvhd / tkhd / mdhd 共通：作成・更新時刻
+    const b = box.slice(), d = new DataView(b.buffer);
+    if (d.getUint8(8) === 1) { setU64(d, 12, nowQT); setU64(d, 20, nowQT); }
+    else { d.setUint32(12, nowQT); d.setUint32(16, nowQT); }
+    return b;
+  }
+  function nowLike(sample, now) { // 元と同じ書式・同じ長さの日時文字列
+    const p = n => String(n).padStart(2, "0");
+    const m = sample.match(/^(\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d)(\.\d+)?(Z|[+-]\d\d:?\d\d)?$/);
+    const frac = m[2] ? "." + "0".repeat(m[2].length - 1) : "", tz = m[3] || "";
+    let base, tzs = "";
+    if (tz === "Z") { base = now.toISOString().slice(0, 19); tzs = "Z"; }
+    else {
+      base = `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}T${p(now.getHours())}:${p(now.getMinutes())}:${p(now.getSeconds())}`;
+      if (tz) { const o = -now.getTimezoneOffset(), sg = o >= 0 ? "+" : "-", a = Math.abs(o); tzs = sg + p(Math.floor(a / 60)) + (tz.includes(":") ? ":" : "") + p(a % 60); }
+    }
+    return base + frac + tzs;
+  }
+  function patchDates(u8, now) {
+    const str = td.decode(u8), out = u8.slice();
+    const re = /\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:?\d\d)?/g; let m;
+    while ((m = re.exec(str))) { const r = nowLike(m[0], now); if (r.length === m[0].length) for (let i = 0; i < r.length; i++) out[m.index + i] = r.charCodeAt(i); }
+    return out;
   }
 
   /**
@@ -317,14 +344,16 @@
     const movieTs = mvdv.getUint32(8 + (mvv === 1 ? 20 : 12));
     const vStart = vS[0].cts; // 先頭キーフレームの表示オフセット
 
+    const now = new Date(), nowQT = opts.dateNow ? Math.floor(now.getTime() / 1000) + QT_EPOCH : 0;
+    const extra = opts.dateNow ? first.extra.map(x => patchDates(x, now)) : first.extra;
     const makeMoov = (base) => {
-      const tv = trakBox(V, vS, 1, movieTs, Math.max(0, vStart), base, big);
-      const ta = A && aS.length ? trakBox(A, aS, 2, movieTs, aStart, base, big) : null;
-      const mv = first.mvhd.slice(), d = new DataView(mv.buffer), ver = d.getUint8(8);
+      const tv = trakBox(V, vS, 1, movieTs, Math.max(0, vStart), base, big, nowQT);
+      const ta = A && aS.length ? trakBox(A, aS, 2, movieTs, aStart, base, big, nowQT) : null;
+      const mv = nowQT ? patchTimes(first.mvhd, nowQT) : first.mvhd.slice(), d = new DataView(mv.buffer), ver = d.getUint8(8);
       const dur = Math.max(tv.movieDur, ta ? ta.movieDur : 0);
       if (ver === 1) setU64(d, 8 + 24, dur); else d.setUint32(8 + 16, dur);
       d.setUint32(mv.length - 4, ta ? 3 : 2); // next_track_ID
-      return { moov: box("moov", mv, tv.box, ...(ta ? [ta.box] : []), ...first.extra), dur };
+      return { moov: box("moov", mv, tv.box, ...(ta ? [ta.box] : []), ...extra), dur };
     };
     const probe = makeMoov(0);
     const base = ftyp.length + probe.moov.length + mdatHdr.length;

@@ -13,225 +13,305 @@
 <title>45 Cut &amp; Join</title>
 <style>
 :root{
-  --bg:#111418; --panel:#1b1f25; --panel2:#252a32; --line:#323844;
-  --text:#eef1f5; --sub:#9aa3af; --accent:#ff6a3d; --accent2:#3da5ff; --ok:#3ddc97; --danger:#ff4d5e; --star:#ffc94d;
+  --bg:#141a26; --panel:#1f2636; --panel2:#2a3246; --line:#36405a;
+  --text:#f3f5fa; --sub:#a3acc2; --accent:#ff6a3d; --accent-d:#d9481f; --sky:#3fb0ff; --sky-d:#1f86d1;
+  --star:#ffc94d; --star-d:#e0a21a; --mint:#3ddc97; --mint-d:#1fae70; --pink:#ff6b9a; --pink-d:#d94477; --purple:#9b7dff; --purple-d:#7356e0;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{touch-action:manipulation;-webkit-text-size-adjust:100%}
 button,select,a,summary,label{touch-action:manipulation}
-html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP","PingFang TC","PingFang SC",sans-serif;}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:ui-rounded,"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","Arial Rounded MT Bold","PingFang TC","PingFang SC",-apple-system,sans-serif;}
 body{min-height:100vh;padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);overscroll-behavior:none;-webkit-user-select:none;user-select:none}
-header{display:flex;align-items:center;gap:8px;padding:10px 14px}
-header h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.02em}
-header h1 small{color:var(--sub);font-weight:500;font-size:11px;margin-left:6px}
-header .sp{flex:1}
 select,button{font:inherit;color:inherit}
-.hbtn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:13px;white-space:nowrap}
-header h1{white-space:nowrap}
-@media (max-width:420px){header h1 small{display:none}}
-.wrap{max-width:900px;margin:0 auto;padding:0 12px calc(96px + env(safe-area-inset-bottom))}
+.ic{display:inline-flex;width:1.25em;height:1.25em;flex:none}
+.ic svg{width:100%;height:100%}
+header{display:flex;align-items:center;gap:8px;padding:10px 14px 6px}
+header h1{font-size:18px;margin:0;font-weight:800;white-space:nowrap;letter-spacing:.01em}
+header h1 .n{color:var(--accent)}
+header .sp{flex:1}
+.hbtn{background:var(--panel2);border:none;border-radius:12px;padding:7px 10px;font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:4px}
+.wrap{max-width:900px;margin:0 auto;padding:0 12px calc(100px + env(safe-area-inset-bottom))}
+
+/* モード切り替え */
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--panel);border-radius:18px;padding:5px;margin:4px 0 10px}
+.modes button{border:none;background:none;border-radius:14px;padding:9px 4px;font-size:14px;font-weight:700;color:var(--sub);display:flex;align-items:center;justify-content:center;gap:6px}
+.modes button .ic{width:20px;height:20px}
+body[data-mode="watch"] .modes [data-mode="watch"]{background:var(--sky);color:#fff;box-shadow:0 3px 0 var(--sky-d)}
+body[data-mode="cut"] .modes [data-mode="cut"]{background:var(--accent);color:#fff;box-shadow:0 3px 0 var(--accent-d)}
+body[data-mode="star"] .modes [data-mode="star"]{background:var(--star);color:#3a2a00;box-shadow:0 3px 0 var(--star-d)}
+.pane{display:none}
+body[data-mode="watch"] .pane[data-pane="watch"],body[data-mode="cut"] .pane[data-pane="cut"],body[data-mode="star"] .pane[data-pane="star"]{display:block}
+.modetip{color:var(--sub);font-size:13px;line-height:1.6;margin:10px 4px 0}
 
 /* プレーヤー */
-#stage{position:relative;background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;touch-action:pan-y}
+#stage{position:relative;background:#000;border-radius:18px;overflow:hidden;aspect-ratio:16/9;touch-action:pan-y}
 #stage video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;visibility:hidden;pointer-events:none}
 #stage video.on{visibility:visible}
-#empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--sub);text-align:center;padding:16px}
+#empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--sub);text-align:center;padding:16px;background:radial-gradient(circle at 50% 40%,#26304a,#11151f)}
 #empty .big{font-size:15px;color:var(--text)}
-#empty .pick{font-size:17px;padding:14px 26px;border-radius:14px}
-.linkbtn{background:none;border:none;color:var(--accent2);font-size:13px;text-decoration:underline;padding:4px}
+.linkbtn{background:none;border:none;color:var(--sky);font-size:13px;text-decoration:underline;padding:4px}
 .ripple{position:absolute;top:0;bottom:0;width:40%;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .25s}
-.ripple.l{left:0;border-radius:0 50% 50% 0;background:radial-gradient(circle at 30% 50%,rgba(255,255,255,.18),transparent 70%)}
-.ripple.r{right:0;border-radius:50% 0 0 50%;background:radial-gradient(circle at 70% 50%,rgba(255,255,255,.18),transparent 70%)}
+.ripple.l{left:0;border-radius:0 50% 50% 0;background:radial-gradient(circle at 30% 50%,rgba(255,255,255,.2),transparent 70%)}
+.ripple.r{right:0;border-radius:50% 0 0 50%;background:radial-gradient(circle at 70% 50%,rgba(255,255,255,.2),transparent 70%)}
 .ripple.show{opacity:1}
-.ripple span{background:rgba(0,0,0,.55);padding:8px 14px;border-radius:20px;font-weight:700;font-size:15px}
-#centerIcon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:64px;height:64px;border-radius:32px;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:26px;opacity:0;transition:opacity .3s;pointer-events:none;padding:0 16px;white-space:nowrap}
-#centerIcon.msg{font-size:14px}
+.ripple span{background:rgba(0,0,0,.55);padding:8px 14px;border-radius:20px;font-weight:800;font-size:15px}
+#centerIcon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:64px;height:64px;border-radius:32px;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0;transition:opacity .3s;pointer-events:none;padding:0 18px;white-space:nowrap;z-index:6}
+#centerIcon.msg{font-size:14px;font-weight:700}
 #centerIcon.show{opacity:1}
-#timeBadge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:8px;font-variant-numeric:tabular-nums;font-size:13px;pointer-events:none}
-#segBadge{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:8px;font-size:12px;pointer-events:none}
+#timeBadge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:10px;font-variant-numeric:tabular-nums;font-size:13px;pointer-events:none}
+#segBadge{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:10px;font-size:12px;pointer-events:none}
+/* アプリ内の全画面 */
+#fsBar{display:none}
+body.fsmode{overflow:hidden}
+body.fsmode #stage{position:fixed;inset:0;z-index:60;border-radius:0;aspect-ratio:auto;width:100vw;height:100vh;height:100dvh}
+body.fsmode #fsBar{display:flex;position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));gap:10px;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.75));z-index:5;transition:opacity .3s}
+body.fsmode #fsBar.hide{opacity:0;pointer-events:none}
+#fsBar button{width:46px;height:46px;border-radius:50%;border:none;background:rgba(255,255,255,.16);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
+#fsBar button .ic{width:24px;height:24px}
+#fsBar #fsPlay{background:var(--accent)}
+#fsBar #fsStar{background:var(--star);color:#3a2a00}
+#fsBar .t{flex:1;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
 
 /* 再生操作 */
-.transport{display:flex;align-items:center;gap:10px;margin-top:10px}
+.transport{display:flex;align-items:center;gap:8px;margin-top:10px}
 .time{font-variant-numeric:tabular-nums;font-size:15px;white-space:nowrap}
-.time b{font-weight:700}
+.time b{font-weight:800}
 .time .tot{color:var(--sub)}
-.round{width:46px;height:46px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:20px;display:flex;align-items:center;justify-content:center;flex:none}
-.round.sec{background:var(--panel2);border:1px solid var(--line);font-size:14px;font-weight:700}
+.round{width:46px;height:46px;border-radius:50%;border:none;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 3px 0 var(--accent-d)}
+.round .ic{width:24px;height:24px}
+.round.sec{background:var(--panel2);box-shadow:0 3px 0 #1a2030;font-size:13px;font-weight:800}
 .round:disabled{opacity:.35}
+.round:active:not(:disabled){transform:translateY(2px);box-shadow:none}
 .transport .sp{flex:1}
 
 /* タイムライン */
-#timeline{position:relative;height:64px;margin-top:12px;background:var(--panel);border-radius:10px;overflow:hidden;touch-action:none}
-.seg{position:absolute;top:8px;bottom:8px;border-radius:6px;overflow:hidden;display:flex;align-items:flex-end;padding:3px 5px;font-size:10px;color:rgba(255,255,255,.9);border:2px solid transparent;background-size:cover;background-position:center}
-.seg.sel{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
-.seg .lbl{background:rgba(0,0,0,.55);border-radius:4px;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-#playhead{position:absolute;top:0;bottom:0;width:2px;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.8);pointer-events:none;z-index:3}
+#timeline{position:relative;height:64px;margin-top:12px;background:var(--panel);border-radius:14px;overflow:hidden;touch-action:none}
+.seg{position:absolute;top:8px;bottom:8px;border-radius:9px;overflow:hidden;display:flex;align-items:flex-end;padding:3px 5px;font-size:10px;color:rgba(255,255,255,.95);border:2px solid transparent;background-size:cover;background-position:center}
+.seg.sel{border-color:#fff;box-shadow:0 0 0 3px var(--accent)}
+.seg .lbl{background:rgba(0,0,0,.55);border-radius:6px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-weight:700}
+#playhead{position:absolute;top:0;bottom:0;width:3px;border-radius:2px;background:#fff;box-shadow:0 0 6px rgba(255,255,255,.8);pointer-events:none;z-index:3}
 #playhead::before{content:"";position:absolute;top:-1px;left:-6px;border:7px solid transparent;border-top-color:#fff}
-#range{position:absolute;top:0;bottom:0;background:rgba(255,77,94,.28);border-left:2px solid var(--star);border-right:2px solid var(--star);pointer-events:none;display:none;z-index:1}
+#range{position:absolute;top:0;bottom:0;background:rgba(255,107,154,.32);border-left:3px solid var(--pink);border-right:3px solid var(--pink);pointer-events:none;display:none;z-index:1}
 #range.on{display:block}
 #range.noL{border-left:none}#range.noR{border-right:none}
 .mk{position:absolute;top:0;bottom:0;width:2px;background:var(--star);z-index:2;pointer-events:none}
-.mk::after{content:"★";position:absolute;top:-2px;left:-5px;font-size:11px;color:var(--star);text-shadow:0 0 2px #000}
+.mk::after{content:"★";position:absolute;top:-2px;left:-6px;font-size:13px;color:var(--star);text-shadow:0 0 3px #000}
 .tlhint{color:var(--sub);font-size:11px;margin:6px 2px 0;text-align:center}
 
-/* ★印のチップ */
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.chip{display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid #5a4a1c;color:var(--star);border-radius:16px;padding:4px 4px 4px 10px;font-size:13px;font-variant-numeric:tabular-nums}
-.chip button{background:none;border:none;color:var(--sub);font-size:14px;padding:0 6px}
+/* ポップなボタン */
+.pop{border:none;border-radius:18px;padding:14px 8px;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;color:#fff;background:var(--panel2);box-shadow:0 4px 0 #1a2030}
+.pop .ic{width:24px;height:24px}
+.pop:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #1a2030}
+.pop:disabled{opacity:.35}
+.pop.orange{background:var(--accent);box-shadow:0 4px 0 var(--accent-d)}
+.pop.yellow{background:var(--star);color:#3a2a00;box-shadow:0 4px 0 var(--star-d)}
+.pop.sky{background:var(--sky);box-shadow:0 4px 0 var(--sky-d)}
+.row2{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:14px}
+.row2 .undo{padding:14px 18px}
 
-/* 主な操作（大きく3つ） */
-.main3{display:grid;grid-template-columns:1.25fr 1fr .8fr;gap:8px;margin-top:12px}
-.act{border:none;border-radius:14px;padding:14px 6px;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--panel2);color:var(--text)}
-.act.cut{background:var(--accent);color:#fff}
-.act.star{background:var(--star);color:#1b1f25}
-.act:disabled{opacity:.35}
-.act:active:not(:disabled){transform:scale(.97)}
+/* 小さい丸アイコンボタン */
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tiles.c3{grid-template-columns:repeat(3,1fr)}
+.tile{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:12px;font-weight:700;color:var(--text);padding:4px 0}
+.tile .bub{width:52px;height:52px;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.tile .bub .ic{width:26px;height:26px}
+.tile:active:not(:disabled) .bub{transform:translateY(2px);box-shadow:none}
+.tile:disabled{opacity:.35}
+.b-orange{background:var(--accent)}.b-sky{background:var(--sky)}.b-mint{background:var(--mint)}.b-pink{background:var(--pink)}.b-purple{background:var(--purple)}.b-star{background:var(--star);color:#3a2a00!important}.b-gray{background:var(--panel2)}
+.tile.on .bub{outline:3px solid #fff;outline-offset:2px}
+.tile.setp .bub{outline:3px solid var(--pink);outline-offset:2px}
 
-/* 選択中のクリップ */
-.selbox{margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
-.selhead{display:flex;align-items:center;gap:8px;font-size:14px}
-.selhead .dot{width:12px;height:12px;border-radius:3px;flex:none}
-.selhead .info{color:var(--sub);font-size:12px;font-variant-numeric:tabular-nums;margin-left:auto;text-align:right}
-.selbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
-.sbtn{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 2px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:3px}
-.sbtn .ic{font-size:18px;line-height:1}
-.sbtn.del{color:#ff8a94;border-color:#5a2a30}
-.sbtn:disabled{opacity:.35}
-.selnone{color:var(--sub);font-size:13px;line-height:1.6}
+.card2{margin-top:14px;background:var(--panel);border-radius:20px;padding:14px}
+.card2 h3{margin:0 0 10px;font-size:14px;display:flex;align-items:center;gap:6px}
+.card2 h3 .ic{width:20px;height:20px}
+.muted{color:var(--sub);font-size:13px;line-height:1.6}
+.selhead{display:flex;align-items:center;gap:8px;font-size:15px;margin-bottom:12px}
+.selhead .dot{width:14px;height:14px;border-radius:5px;flex:none}
+.selhead .info{color:var(--sub);font-size:12px;font-variant-numeric:tabular-nums;margin-left:auto;text-align:right;white-space:pre-line}
 
-/* その他の機能 */
-details.more{margin-top:12px;background:var(--panel);border-radius:14px;padding:0 12px}
-details.more summary{padding:13px 2px;font-size:14px;font-weight:600;list-style:none;display:flex;align-items:center}
-details.more summary::-webkit-details-marker{display:none}
-details.more summary::after{content:"＋";margin-left:auto;color:var(--sub)}
-details.more[open] summary::after{content:"－"}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.sbtn.on{border-color:var(--accent2);color:var(--accent2)}
-.sbtn.setp{border-color:var(--star);color:var(--star)}
-.subt{color:var(--sub);font-size:12px;margin:14px 2px 8px}
-.morepad{height:12px}
+/* ★の秒数設定 */
+.len{display:flex;align-items:center;justify-content:center;gap:8px;margin:4px 0 6px}
+.stepper{display:flex;flex-direction:column;align-items:center;gap:6px;flex:1}
+.stepper .lab{font-size:12px;color:var(--sub);font-weight:700}
+.stepper .ctl{display:flex;align-items:center;gap:6px}
+.stepper button{width:38px;height:38px;border-radius:50%;border:none;background:var(--panel2);font-size:20px;font-weight:800;box-shadow:0 3px 0 #1a2030}
+.stepper button:active{transform:translateY(2px);box-shadow:none}
+.stepper .v{min-width:56px;text-align:center;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.bigstar{font-size:34px;color:var(--star);text-shadow:0 3px 0 var(--star-d)}
+.lenbar{display:flex;height:16px;border-radius:8px;overflow:hidden;margin:8px 4px 4px;background:var(--panel2)}
+.lenbar .a{background:var(--sky)}.lenbar .s{width:4px;background:var(--star)}.lenbar .b{background:var(--mint)}
+.lensum{text-align:center;color:var(--sub);font-size:12px;margin-top:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:2px;background:#3a3216;color:var(--star);border-radius:14px;padding:6px 4px 6px 12px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.chip button{background:none;border:none;color:#c9b27a;padding:0 6px;display:flex}
+.chip button .ic{width:16px;height:16px}
 
-.foot{display:flex;justify-content:center;gap:10px;margin-top:22px;flex-wrap:wrap}
-.support{background:transparent;border:1px solid var(--accent);color:var(--accent);border-radius:20px;padding:8px 18px;font-size:13px;text-decoration:none}
+.foot{display:flex;justify-content:center;gap:10px;margin-top:24px;flex-wrap:wrap}
+.support{background:transparent;border:2px solid var(--accent);color:var(--accent);border-radius:20px;padding:8px 18px;font-size:13px;font-weight:700;text-decoration:none}
 .brand{color:var(--sub);font-size:11px;text-align:center;margin-top:10px}
 
 /* 下部の保存ボタン */
-.savebar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%);z-index:20}
-.savebar button{display:block;width:100%;max-width:876px;margin:0 auto;border:none;border-radius:16px;padding:15px;font-size:17px;font-weight:800;background:var(--accent);color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4)}
-.savebar button:disabled{background:var(--panel2);color:var(--sub);box-shadow:none}
+.savebar{position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 35%);z-index:20}
+.savebar button{width:100%;max-width:876px;margin:0 auto;font-size:17px;padding:15px}
+body[data-mode="watch"] .savebar{display:none}
 
 /* シート・ダイアログ */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:flex-end;justify-content:center;z-index:40}
+.overlay{position:fixed;inset:0;background:rgba(5,8,15,.7);display:none;align-items:flex-end;justify-content:center;z-index:70}
 .overlay.show{display:flex}
-.sheet{background:var(--panel);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
-.sheet h2{margin:0 0 12px;font-size:18px}
-.opt{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:8px}
+.sheet{background:var(--panel);width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:20px 16px calc(18px + env(safe-area-inset-bottom));max-height:90vh;overflow:auto}
+.sheet h2{margin:0 0 14px;font-size:19px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--panel2);border:none;border-radius:18px;padding:13px 14px;margin-bottom:10px;box-shadow:0 3px 0 #1a2030}
+.opt .bub{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.opt .bub .ic{width:24px;height:24px}
 .opt b{display:block;font-size:15px}
-.opt span{display:block;color:var(--sub);font-size:12px;margin-top:3px}
-.opt b span{display:inline;color:inherit;font-size:inherit;margin:0}
-.opt.pri{background:var(--accent);border-color:var(--accent);color:#fff}
-.opt.pri span{color:rgba(255,255,255,.85)}
-.opt:disabled{opacity:.4}
-.hlrow{display:flex;gap:6px;margin:-2px 0 10px}
-.hlrow select{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 6px;font-size:13px}
-.chk{display:flex;align-items:center;gap:10px;font-size:14px;margin:8px 2px 14px}
-.chk input{width:22px;height:22px}
-.closeb{display:block;width:100%;background:none;border:1px solid var(--line);border-radius:12px;padding:11px;font-size:14px;color:var(--sub)}
+.opt small{display:block;color:var(--sub);font-size:12px;margin-top:3px;font-weight:500}
+.opt:active{transform:translateY(2px);box-shadow:none}
+.opts-lbl{color:var(--sub);font-size:12px;font-weight:700;margin:14px 2px 6px}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel2);border-radius:14px;padding:4px}
+.seg2 button{border:none;background:none;border-radius:11px;padding:9px 4px;font-size:12px;font-weight:700;color:var(--sub);line-height:1.35}
+.seg2 button.on{background:var(--sky);color:#fff}
+.chk{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;margin:14px 2px}
+.chk input{width:22px;height:22px;accent-color:var(--accent)}
+.closeb{display:block;width:100%;background:none;border:2px solid var(--line);border-radius:14px;padding:11px;font-size:14px;font-weight:700;color:var(--sub);margin-top:6px}
 .help{line-height:1.7;font-size:14px}
 .help h3{font-size:14px;margin:16px 0 4px;color:var(--accent)}
 .help ol,.help ul{margin:0;padding-left:20px}
 .help li{margin:3px 0}
-.help .note{background:var(--panel2);border-radius:10px;padding:10px 12px;color:var(--sub);font-size:13px;margin-top:6px}
+.help .note{background:var(--panel2);border-radius:12px;padding:10px 12px;color:var(--sub);font-size:13px;margin-top:6px}
 
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+#modal{position:fixed;inset:0;background:rgba(5,8,15,.7);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
 #modal.show{display:flex}
-.card{background:var(--panel);border-radius:16px;padding:20px;max-width:420px;width:100%}
-.card h2{margin:0 0 10px;font-size:17px}
-.card p{color:var(--sub);font-size:13px;line-height:1.6;margin:8px 0;white-space:pre-line}
-.bar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden;margin:14px 0}
+.card{background:var(--panel);border-radius:22px;padding:20px;max-width:420px;width:100%}
+.card h2{margin:0 0 10px;font-size:18px}
+.card p{color:var(--sub);font-size:13px;line-height:1.65;margin:8px 0;white-space:pre-line}
+.bar{height:10px;background:var(--panel2);border-radius:5px;overflow:hidden;margin:14px 0}
 .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
-.row{display:flex;flex-direction:column;gap:8px;margin-top:14px}
-.btn{border:none;border-radius:12px;padding:12px 16px;background:var(--panel2);font-size:15px}
-.btn.pri{background:var(--accent);color:#fff;font-weight:700}
+.mrow{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.btn{border:none;border-radius:16px;padding:13px 16px;background:var(--panel2);font-size:15px;font-weight:700;box-shadow:0 3px 0 #1a2030}
+.btn.pri{background:var(--accent);color:#fff;box-shadow:0 3px 0 var(--accent-d)}
 #exportCanvas{display:none}
-:fullscreen #stage, #stage:fullscreen{border-radius:0;aspect-ratio:auto;width:100vw;height:100vh}
 </style>
 </head>
-<body>
+<body data-mode="watch">
 <header>
-  <h1>45 Cut &amp; Join<small>by 45tools</small></h1>
+  <h1><span class="n">45</span> Cut &amp; Join</h1>
   <div class="sp"></div>
-  <button class="hbtn" id="helpBtn" aria-label="help">？ <span data-i="helpShort"></span></button>
+  <button class="hbtn" id="helpBtn" aria-label="help"><i class="ic" data-ic="help"></i><span data-i="helpShort"></span></button>
   <select id="lang" class="hbtn" aria-label="Language">
     <option value="ja">日本語</option><option value="en">English</option><option value="zh-Hant">繁體中文</option><option value="zh">简体中文</option>
   </select>
 </header>
 
 <div class="wrap">
+  <nav class="modes">
+    <button data-mode="watch"><i class="ic" data-ic="eye"></i><span data-i="mWatch"></span></button>
+    <button data-mode="cut"><i class="ic" data-ic="scissors"></i><span data-i="mCut"></span></button>
+    <button data-mode="star"><i class="ic" data-ic="star"></i><span data-i="mStar"></span></button>
+  </nav>
+
   <div id="stage">
     <div id="empty">
       <div class="big" data-i="emptyTitle"></div>
-      <button class="btn pri pick" id="addFirst" data-i="addVideo"></button>
+      <button class="pop orange" id="addFirst" style="padding:14px 26px"><i class="ic" data-ic="film"></i><span data-i="addVideo"></span></button>
       <div data-i="emptySub" style="font-size:12px"></div>
       <button class="linkbtn" id="slowBtn" data-i="slowLink"></button>
     </div>
     <div class="ripple l" id="rl"><span>« 10s</span></div>
     <div class="ripple r" id="rr"><span>10s »</span></div>
-    <div id="centerIcon">▶</div>
+    <div id="centerIcon"></div>
     <div id="timeBadge" hidden></div>
     <div id="segBadge" hidden></div>
+    <div id="fsBar">
+      <button id="fsExit" aria-label="exit"><i class="ic" data-ic="shrink"></i></button>
+      <button id="fsBack" aria-label="-10s"><i class="ic" data-ic="back10"></i></button>
+      <button id="fsPlay" aria-label="play"><i class="ic" data-ic="play"></i></button>
+      <button id="fsFwd" aria-label="+10s"><i class="ic" data-ic="fwd10"></i></button>
+      <span class="t" id="fsTime">0:00 / 0:00</span>
+      <button id="fsStar" aria-label="mark"><i class="ic" data-ic="star"></i></button>
+    </div>
   </div>
 
   <div class="transport">
-    <button class="round sec" id="back10" aria-label="-10s">−10</button>
-    <button class="round" id="play" aria-label="play">▶</button>
-    <button class="round sec" id="fwd10" aria-label="+10s">+10</button>
+    <button class="round sec" id="back10" aria-label="-10s"><i class="ic" data-ic="back10"></i></button>
+    <button class="round" id="play" aria-label="play"><i class="ic" data-ic="play"></i></button>
+    <button class="round sec" id="fwd10" aria-label="+10s"><i class="ic" data-ic="fwd10"></i></button>
     <div class="sp"></div>
     <div class="time"><b id="cur">0:00</b> <span class="tot">/ <span id="tot">0:00</span></span></div>
-    <button class="round sec" id="speed" style="font-size:12px">1x</button>
-    <button class="round sec" id="fs" aria-label="fullscreen">⛶</button>
+    <button class="round sec" id="speed">1x</button>
+    <button class="round sec" id="fs" aria-label="fullscreen"><i class="ic" data-ic="expand"></i></button>
   </div>
 
   <div id="timeline"><div id="range"></div><div id="playhead" style="left:0"></div></div>
   <p class="tlhint" id="tlHint" data-i="tlHint"></p>
-  <div class="chips" id="markChips"></div>
 
-  <div class="main3">
-    <button class="act cut" id="splitBtn">✂︎ <span data-i="cutHere"></span></button>
-    <button class="act star" id="markBtn">★ <span data-i="markOn"></span></button>
-    <button class="act" id="undoBtn">↶ <span data-i="undo"></span></button>
-  </div>
-
-  <div class="selbox" id="selBox">
-    <div id="selNone" class="selnone" data-i="selNone"></div>
-    <div id="selOn" hidden>
-      <div class="selhead"><span class="dot" id="selDot"></span><b id="selTitle"></b><span class="info" id="selInfo"></span></div>
-      <div class="selbtns">
-        <button class="sbtn del" id="delBtn"><span class="ic">🗑</span><span data-i="del"></span></button>
-        <button class="sbtn" id="leftBtn"><span class="ic">◀</span><span data-i="moveL"></span></button>
-        <button class="sbtn" id="rightBtn"><span class="ic">▶</span><span data-i="moveR"></span></button>
-        <button class="sbtn" id="saveOneBtn"><span class="ic">⤓</span><span data-i="saveThis"></span></button>
+  <!-- 見る -->
+  <section class="pane" data-pane="watch">
+    <p class="modetip" data-i="tipWatch"></p>
+    <div class="card2">
+      <div class="tiles">
+        <button class="tile" id="addBtn"><span class="bub b-sky"><i class="ic" data-ic="plus"></i></span><span data-i="addMore"></span></button>
+        <button class="tile" id="sortBtn"><span class="bub b-purple"><i class="ic" data-ic="clock"></i></span><span data-i="sortDate"></span></button>
+        <button class="tile" id="snapBtn"><span class="bub b-pink"><i class="ic" data-ic="camera"></i></span><span data-i="snap"></span></button>
+        <button class="tile" id="muteBtn"><span class="bub b-mint"><i class="ic" id="muteIc" data-ic="sound"></i></span><span id="muteLbl"></span></button>
       </div>
     </div>
-  </div>
+    <div class="card2" id="newCard">
+      <button class="pop" id="newBtn" style="width:100%"><i class="ic" data-ic="refresh"></i><span data-i="startOver"></span></button>
+    </div>
+  </section>
 
-  <details class="more" id="more">
-    <summary data-i="more"></summary>
-    <div class="grid4">
-      <button class="sbtn" id="addBtn"><span class="ic">＋</span><span data-i="addMore"></span></button>
-      <button class="sbtn" id="sortBtn"><span class="ic">🕒</span><span data-i="sortDate"></span></button>
-      <button class="sbtn" id="snapBtn"><span class="ic">📷</span><span data-i="snap"></span></button>
-      <button class="sbtn" id="muteBtn"><span class="ic" id="muteIc">🔊</span><span id="muteLbl"></span></button>
+  <!-- カット -->
+  <section class="pane" data-pane="cut">
+    <div class="row2">
+      <button class="pop orange" id="splitBtn"><i class="ic" data-ic="scissors"></i><span data-i="cutHere"></span></button>
+      <button class="pop undo" id="undoBtn"><i class="ic" data-ic="undo"></i><span data-i="undo"></span></button>
     </div>
-    <p class="subt" data-i="rangeHelp"></p>
-    <div class="grid3">
-      <button class="sbtn" id="inBtn"><span class="ic">⟦</span><span data-i="inPt"></span></button>
-      <button class="sbtn" id="outBtn"><span class="ic">⟧</span><span data-i="outPt"></span></button>
-      <button class="sbtn del" id="rangeDelBtn"><span class="ic">⌫</span><span data-i="rangeDel"></span></button>
+    <div class="card2" id="selBox">
+      <div id="selNone" class="muted" data-i="selNone"></div>
+      <div id="selOn" hidden>
+        <div class="selhead"><span class="dot" id="selDot"></span><b id="selTitle"></b><span class="info" id="selInfo"></span></div>
+        <div class="tiles">
+          <button class="tile" id="delBtn"><span class="bub b-pink"><i class="ic" data-ic="trash"></i></span><span data-i="del"></span></button>
+          <button class="tile" id="leftBtn"><span class="bub b-sky"><i class="ic" data-ic="left"></i></span><span data-i="moveL"></span></button>
+          <button class="tile" id="rightBtn"><span class="bub b-sky"><i class="ic" data-ic="right"></i></span><span data-i="moveR"></span></button>
+          <button class="tile" id="saveOneBtn"><span class="bub b-mint"><i class="ic" data-ic="download"></i></span><span data-i="saveThis"></span></button>
+        </div>
+      </div>
     </div>
-    <div class="morepad"></div>
-  </details>
+    <div class="card2">
+      <h3><i class="ic" data-ic="eraser"></i><span data-i="rangeTitle"></span></h3>
+      <p class="muted" data-i="rangeHelp" style="margin:0 0 12px"></p>
+      <div class="tiles c3">
+        <button class="tile" id="inBtn"><span class="bub b-purple"><i class="ic" data-ic="flagIn"></i></span><span data-i="inPt"></span></button>
+        <button class="tile" id="outBtn"><span class="bub b-purple"><i class="ic" data-ic="flagOut"></i></span><span data-i="outPt"></span></button>
+        <button class="tile" id="rangeDelBtn"><span class="bub b-pink"><i class="ic" data-ic="eraser"></i></span><span data-i="rangeDel"></span></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ハイライト -->
+  <section class="pane" data-pane="star">
+    <div class="row2">
+      <button class="pop yellow" id="markBtn"><i class="ic" data-ic="star"></i><span data-i="markOn"></span></button>
+      <button class="pop undo" id="undoMarkBtn"><i class="ic" data-ic="undo"></i><span data-i="undo"></span></button>
+    </div>
+    <div class="card2">
+      <h3><i class="ic" data-ic="star" style="color:var(--star)"></i><span data-i="marksTitle"></span></h3>
+      <div class="chips" id="markChips"></div>
+      <p class="muted" id="noMarks" data-i="noMarks" style="margin:0"></p>
+    </div>
+    <div class="card2">
+      <h3><i class="ic" data-ic="clock"></i><span data-i="lenTitle"></span></h3>
+      <div class="len">
+        <div class="stepper"><span class="lab" data-i="before"></span><div class="ctl"><button id="preMinus">−</button><span class="v" id="preV"></span><button id="prePlus">＋</button></div></div>
+        <span class="bigstar">★</span>
+        <div class="stepper"><span class="lab" data-i="after"></span><div class="ctl"><button id="postMinus">−</button><span class="v" id="postV"></span><button id="postPlus">＋</button></div></div>
+      </div>
+      <div class="lenbar"><span class="a" id="lenA"></span><span class="s"></span><span class="b" id="lenB"></span></div>
+      <p class="lensum" id="lenSum"></p>
+      <button class="pop sky" id="previewBtn" style="width:100%;margin-top:12px;font-size:14px"><i class="ic" data-ic="eye"></i><span data-i="hlPreview"></span></button>
+    </div>
+  </section>
 
   <div class="foot">
     <a class="support" id="supportLink" target="_blank" rel="noopener" data-i="support"></a>
@@ -239,16 +319,28 @@ details.more[open] summary::after{content:"－"}
   <div class="brand">© 45tools</div>
 </div>
 
-<div class="savebar"><button id="exportBtn">⤓ <span data-i="saveBtn"></span></button></div>
+<div class="savebar"><button class="pop orange" id="exportBtn"><i class="ic" data-ic="download"></i><span id="exportLbl"></span></button></div>
 
-<!-- 保存のしかた -->
+<!-- 保存のしかた（カット） -->
 <div class="overlay" id="saveSheet"><div class="sheet">
   <h2 data-i="saveTitle"></h2>
-  <button class="opt pri" id="joinBtn"><b data-i="saveJoin"></b><span data-i="saveJoinD"></span></button>
-  <button class="opt" id="partsBtn"><b data-i="saveEach"></b><span data-i="saveEachD"></span></button>
-  <button class="opt" id="hlBtn"><b>★ <span data-i="saveHl"></span></b><span id="hlDesc"></span></button>
-  <div class="hlrow"><select id="preSel" aria-label="before"></select><select id="postSel" aria-label="after"></select></div>
-  <label class="chk"><input type="checkbox" id="muteChk"><span data-i="muteSave"></span></label>
+  <button class="opt" id="joinBtn"><span class="bub b-orange"><i class="ic" data-ic="join"></i></span><span><b data-i="saveJoin"></b><small data-i="saveJoinD"></small></span></button>
+  <button class="opt" id="partsBtn"><span class="bub b-sky"><i class="ic" data-ic="split"></i></span><span><b data-i="saveEach"></b><small data-i="saveEachD"></small></span></button>
+  <div class="opts-lbl" data-i="dateLbl"></div>
+  <div class="seg2 datePick"><button data-date="orig"></button><button data-date="now"></button></div>
+  <label class="chk"><input type="checkbox" class="muteChk"><span data-i="muteSave"></span></label>
+  <button class="closeb" data-close data-i="close"></button>
+</div></div>
+
+<!-- 保存のしかた（ハイライト） -->
+<div class="overlay" id="hlSheet"><div class="sheet">
+  <h2 data-i="hlTitle"></h2>
+  <p class="muted" id="hlSheetDesc" style="margin:-6px 0 12px"></p>
+  <button class="opt" id="hlOneBtn"><span class="bub b-star"><i class="ic" data-ic="join"></i></span><span><b data-i="hlOne"></b><small data-i="hlOneD"></small></span></button>
+  <button class="opt" id="hlEachBtn"><span class="bub b-sky"><i class="ic" data-ic="split"></i></span><span><b data-i="hlEach"></b><small data-i="hlEachD"></small></span></button>
+  <div class="opts-lbl" data-i="dateLbl"></div>
+  <div class="seg2 datePick"><button data-date="orig"></button><button data-date="now"></button></div>
+  <label class="chk"><input type="checkbox" class="muteChk"><span data-i="muteSave"></span></label>
   <button class="closeb" data-close data-i="close"></button>
 </div></div>
 
@@ -267,7 +359,7 @@ details.more[open] summary::after{content:"－"}
   <h2 id="mTitle"></h2>
   <p id="mText"></p>
   <div class="bar" id="mBar"><i id="mFill"></i></div>
-  <div class="row" id="mRow"></div>
+  <div class="mrow" id="mRow"></div>
 </div></div>
 
 <script src="mp4cut.js"></script>
@@ -276,31 +368,67 @@ details.more[open] summary::after{content:"－"}
 const SUPPORT_URL = "https://ofuse.me/45tools"; // ← OFUSEのURLに差し替え
 const SKIP = 10;
 
+
+/* ===== アイコン（丸みのある手描き風） ===== */
+const ICONS={
+ play:'<path d="M8 5.2c0-1 1.1-1.6 1.9-1.1l9.4 6.2c.8.5.8 1.7 0 2.2l-9.4 6.2c-.8.5-1.9-.1-1.9-1.1z" fill="currentColor"/>',
+ pause:'<rect x="6" y="4.5" width="4.2" height="15" rx="1.8" fill="currentColor"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.8" fill="currentColor"/>',
+ back10:'<path d="M4.5 12a7.5 7.5 0 1 0 2.3-5.4"/><path d="M4.2 3.8v3.6h3.6"/><text x="12.3" y="15.6" font-size="7.6" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial Rounded MT Bold,Arial,sans-serif">10</text>',
+ fwd10:'<path d="M19.5 12a7.5 7.5 0 1 1-2.3-5.4"/><path d="M19.8 3.8v3.6h-3.6"/><text x="11.7" y="15.6" font-size="7.6" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial Rounded MT Bold,Arial,sans-serif">10</text>',
+ scissors:'<circle cx="6.5" cy="6.5" r="3"/><circle cx="6.5" cy="17.5" r="3"/><path d="M20 5 8.9 15.1M14.6 13.5 20 19M8.9 8.9 12 11.7"/>',
+ star:'<path d="M12 3.6l2.5 5.1 5.6.8-4.1 3.9 1 5.6L12 16.4 7 19l1-5.6-4.1-3.9 5.6-.8z" fill="currentColor" stroke-width="1.6"/>',
+ undo:'<path d="M9 13.5 4.5 9 9 4.5"/><path d="M4.8 9h9.7a5 5 0 0 1 0 10H11"/>',
+ trash:'<path d="M4.5 7h15"/><path d="M9.5 7V5.3c0-.7.6-1.3 1.3-1.3h2.4c.7 0 1.3.6 1.3 1.3V7"/><path d="M6.5 7l.9 11.4c.1 1 .9 1.6 1.8 1.6h5.6c1 0 1.7-.7 1.8-1.6L17.5 7"/><path d="M10.3 11v5M13.7 11v5"/>',
+ left:'<path d="M14.5 5.5 8 12l6.5 6.5"/>',
+ right:'<path d="M9.5 5.5 16 12l-6.5 6.5"/>',
+ download:'<path d="M12 4v10.5"/><path d="M7.5 10.5 12 15l4.5-4.5"/><path d="M5 19.5h14"/>',
+ plus:'<path d="M12 5.5v13M5.5 12h13"/>',
+ clock:'<circle cx="12" cy="12" r="8"/><path d="M12 7.5V12l3 2"/>',
+ camera:'<rect x="3.5" y="7" width="17" height="12.5" rx="3.2"/><path d="M8.5 7l1.4-2.5h4.2L15.5 7"/><circle cx="12" cy="13.2" r="3.2"/>',
+ sound:'<path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3z" fill="currentColor"/><path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a7.8 7.8 0 0 1 0 11"/>',
+ mute:'<path d="M4.5 9.5h3l4.5-4v13l-4.5-4h-3z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
+ eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+ film:'<rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M3.5 9.5h17M3.5 14.5h17M8 5v14M16 5v14"/>',
+ help:'<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1.1.9-1.1 1.6v.4"/><circle cx="12" cy="16.8" r=".9" fill="currentColor"/>',
+ expand:'<path d="M4.5 9V5.5c0-.6.4-1 1-1H9M15 4.5h3.5c.6 0 1 .4 1 1V9M19.5 15v3.5c0 .6-.4 1-1 1H15M9 19.5H5.5c-.6 0-1-.4-1-1V15"/>',
+ shrink:'<path d="M9 4.5V8c0 .6-.4 1-1 1H4.5M19.5 9H16c-.6 0-1-.4-1-1V4.5M15 19.5V16c0-.6.4-1 1-1h3.5M4.5 15H8c.6 0 1 .4 1 1v3.5"/>',
+ eraser:'<path d="M14.5 4.8l4.7 4.7c.6.6.6 1.5 0 2.1L12 18.8H7.6l-2.8-2.8c-.6-.6-.6-1.5 0-2.1z"/><path d="M9.5 9.8l4.7 4.7M7.6 18.8H19.5"/>',
+ flagIn:'<path d="M6.5 4v16"/><path d="M6.5 5h10.5l-2.8 3.5L17 12H6.5" fill="currentColor"/>',
+ flagOut:'<path d="M17.5 4v16"/><path d="M17.5 5H7l2.8 3.5L7 12h10.5" fill="currentColor"/>',
+ join:'<rect x="3" y="8" width="8" height="8" rx="2"/><rect x="13" y="8" width="8" height="8" rx="2"/><path d="M11 12h2"/>',
+ split:'<rect x="3" y="8" width="7" height="8" rx="2"/><rect x="14" y="8" width="7" height="8" rx="2"/><path d="M12 6v12" stroke-dasharray="2 2.2"/>',
+ refresh:'<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.6 4.6v3.8h-3.8"/>',
+ x:'<path d="M7 7l10 10M17 7 7 17"/>',
+};
+const ico=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||""}</svg>`;
+function fillIcons(root=document){ root.querySelectorAll("[data-ic]").forEach(el=>{ el.innerHTML=ico(el.dataset.ic); }); }
+fillIcons();
+
 /* ===== 多言語 ===== */
 const I18N = {
- ja:{helpShort:"使い方",helpTitle:"使い方",help:"<h3>基本の3ステップ</h3><ol><li>「動画を選ぶ」で動画を選びます（複数選ぶと、選んだ順につながります）。</li><li>再生しながら、いらない場面の<b>始まり</b>で「✂ ここで切る」、<b>終わり</b>でもう一度「✂ ここで切る」。間にできたクリップをタイムラインでタップして「🗑 削除」。</li><li>下の「⤓ 保存する」→ 保存のしかたを選ぶ →「写真アプリに保存」→ 次の画面で「ビデオを保存」。</li></ol><h3>画面の操作</h3><ul><li>画面の中央をタップ：再生／停止</li><li>画面の右側・左側をダブルタップ：10秒送り／戻し（続けてタップすると20秒、30秒…）</li><li>タイムラインをなぞる：好きな位置へ移動</li></ul><h3>★印でハイライト</h3><ul><li>ゴールなどの場面で「★ 印をつける」。保存のときに「★印の前後だけ保存」を選ぶと、その場面だけを集めた動画になります。</li></ul><h3>読み込みを速くするには</h3><div class=\"note\">写真ライブラリから選ぶと、iPhoneが動画を変換してから渡すため、長い動画ほど時間がかかります（7分で約1分）。<br>先に写真アプリで動画を選んで「共有」→「“ファイル”に保存」しておき、このアプリでは「動画を選ぶ」→「ファイルを選択」からその動画を選ぶと、変換なし・元の画質ですぐ読み込めます。</div><h3>知っておくと便利</h3><ul><li>切る位置は、再生位置に一番近い映像の区切り（キーフレーム）に合わせます。ずれは通常1秒以内です。</li><li>保存は再エンコードしないので一瞬で終わり、画質も読み込んだ動画のままです。</li></ul>",slowLink:"読み込みが遅いときは",slowTitle:"読み込みを速くするには",slowText:"写真ライブラリから選ぶと、iPhoneが動画を変換してから渡すため、長い動画ほど時間がかかります（7分で約1分）。\n\n速くする方法：\n① 写真アプリで動画を選び「共有」→「“ファイル”に保存」\n② このアプリで「動画を選ぶ」→「ファイルを選択」からその動画を選ぶ\n\n変換されないので、すぐに読み込めて画質も元のままです。",tlHint:"タイムラインをなぞると移動、クリップをタップで選択",cutHere:"ここで切る",markOn:"印をつける",selNone:"「✂ ここで切る」で分けたクリップをタイムラインでタップすると、削除・並べ替え・個別の保存ができます。",moveL:"前へ",moveR:"後ろへ",saveThis:"これだけ保存",more:"その他の機能",addMore:"動画を追加",rangeHelp:"休憩などをまとめて消す：再生位置で「始点」「終点」を決めて「範囲を消す」",inPt:"ここを始点",outPt:"ここを終点",rangeDel:"範囲を消す",saveBtn:"保存する",saveTitle:"保存のしかた",saveJoin:"1本につなげて保存",saveJoinD:"すべてのクリップを今の順番で1本の動画にします",saveEach:"クリップごとに保存",saveEachD:"切ったクリップを別々の動画にします",saveHl:"★印の前後だけ保存",hlDesc:"★印{n}か所の前後をつないだ動画にします",hlDescNone:"★印がまだありません（再生中に「★ 印をつける」）",muteSave:"音声なしで保存",fastTitle:"保存の準備ができました",fastText:"画質は元のまま（再エンコードなし）です。\n「写真アプリに保存」を押し、次の画面で「ビデオを保存」を選ぶと写真アプリに入ります。",savePhotos:"写真アプリに保存",saveFiles:"ファイルに保存",snapText:"表示中の場面を画像にしました。\n「写真アプリに保存」→ 次の画面で「画像を保存」。",shareFail:"共有画面を開けませんでした。「ファイルに保存」したあと、ファイルアプリで開いて共有→「ビデオを保存」してください。",noShare:"この端末では写真アプリへ直接渡せません。「ファイルに保存」したあと、ファイルアプリで開いて共有→「ビデオを保存」してください。",emptySub:"複数選ぶと、選んだ順につながります",emptyTitle:"スマホで撮った動画を選んでください",loading:"読み込み中…",playErr:"再生を開始できませんでした",addVideo:"動画を選ぶ",
-  add:"追加",split:"分割",del:"削除",undo:"元に戻す",parts:"パートごとに保存",addMark:"マーカー",markAdded:"★ マーカーを追加しました",pre:"前",post:"後",sec:"秒",hl:"ハイライトを作る",hlTitle:"ハイライト",hlText:"マーカーの前{a}秒〜後{b}秒を切り出します（{n}か所・合計{d}）。",hlOne:"1本にまとめて保存",hlEach:"別々に保存",hlTimeline:"タイムラインをハイライトだけにする",noMarks:"再生中に「★ マーカー」を押すと、ゴールなどの場面に印を付けられます。印はこの端末に記録され、同じ動画を開くと復元されます。",markNeed:"先にマーカーを付けてください",sortDate:"撮影順",snap:"静止画",soundOn:"音声あり",soundOff:"音声なし",inSet:"始点を設定しました",outSet:"終点を設定しました",rangeNeed:"先に始点か終点を設定してください",sorted:"撮影日時の順に並べました",noDate:"撮影日時が分からない動画は最後に回しました",snapTitle:"静止画を保存",mutedNote:"（音声なし）",export:"結合して保存",
+ ja:{mWatch:"見る",mCut:"カット",mStar:"ハイライト",tipWatch:"再生して確認するモードです。画面の中央タップで再生／停止、右側・左側のダブルタップで10秒送り／戻し。いらない部分を消すときは「カット」、ゴールなどの場面だけを集めるときは「ハイライト」へ。",startOver:"ぜんぶ消して新しく始める",startOverQ:"編集中の動画をすべて閉じて、最初からやり直しますか？",rangeTitle:"長い部分をまとめて消す",rangeHelp:"休憩など長い部分は、再生位置で「ここを始点」「ここを終点」を決めて「範囲を消す」。",marksTitle:"つけた★印",noMarks:"再生しながら、ゴールなど残したい場面で「★ 印をつける」を押してください。",lenTitle:"★1つで残す長さ",before:"★の前",after:"★の後",secU:"秒",lenSum:"★{n}か所 → ハイライト合計 約{d}",lenSumNone:"★1つにつき、前{a}秒＋後{b}秒＝{c}秒の場面を残します",hlPreview:"ハイライトだけを再生して確認",hlPreviewOff:"元の動画に戻す",hlTitle:"ハイライトを保存",hlText:"★の前{a}秒〜後{b}秒を切り出します（{n}か所・合計{d}）。",hlOne:"1本にまとめて保存",hlOneD:"★の場面をつないで1本の動画にします",hlEach:"場面ごとに別々に保存",hlEachD:"★の場面を1つずつ別の動画にします",saveCut:"保存する",saveStar:"ハイライトを保存",dateLbl:"写真アプリでの並び",dateOrig:"撮影日のまま\n（元の動画のとなり）",dateNow:"今日の日付\n（いちばん新しい所）",markUndone:"★印を1つ取り消しました",markNone:"取り消す★印がありません",markNeed:"先に★印をつけてください",tlHint:"タイムラインをなぞると移動、クリップをタップで選択",help:"<h3>3つのモード</h3><ul><li><b>見る</b>：再生して確認。動画の追加・撮影順の並べ替え・静止画・音声のオン／オフもここ。</li><li><b>カット</b>：いらない場面の<b>始まり</b>で「✂ ここで切る」、<b>終わり</b>でもう一度「✂」。間のクリップをタイムラインでタップして「削除」。</li><li><b>ハイライト</b>：ゴールなどの場面で「★ 印をつける」。★の前後何秒を残すかを決めて保存。</li></ul><h3>画面の操作</h3><ul><li>画面の中央をタップ：再生／停止</li><li>右側・左側をダブルタップ：10秒送り／戻し（続けてタップで20秒、30秒…）。全画面でも使えます</li><li>タイムラインをなぞる：好きな位置へ移動</li></ul><h3>保存</h3><ul><li>下の保存ボタン →「写真アプリに保存」→ 次の画面で「ビデオを保存」。</li><li>写真アプリでの並びは「撮影日のまま」か「今日の日付」を選べます。</li><li>再エンコードしないので一瞬で終わり、画質も読み込んだ動画のままです。</li></ul><h3>読み込みを速くするには</h3><div class=\"note\">写真ライブラリから選ぶと、iPhoneが動画を変換してから渡すため、長い動画ほど時間がかかります（7分で約1分）。<br>先に写真アプリで動画を選んで「共有」→「“ファイル”に保存」しておき、このアプリでは「動画を選ぶ」→「ファイルを選択」からその動画を選ぶと、変換なし・元の画質ですぐ読み込めます。</div>",helpShort:"使い方",helpTitle:"使い方",slowLink:"読み込みが遅いときは",slowTitle:"読み込みを速くするには",slowText:"写真ライブラリから選ぶと、iPhoneが動画を変換してから渡すため、長い動画ほど時間がかかります（7分で約1分）。\n\n速くする方法：\n① 写真アプリで動画を選び「共有」→「“ファイル”に保存」\n② このアプリで「動画を選ぶ」→「ファイルを選択」からその動画を選ぶ\n\n変換されないので、すぐに読み込めて画質も元のままです。",cutHere:"ここで切る",markOn:"印をつける",selNone:"「✂ ここで切る」で分けたクリップをタイムラインでタップすると、削除・並べ替え・個別の保存ができます。",moveL:"前へ",moveR:"後ろへ",saveThis:"これだけ保存",more:"その他の機能",addMore:"動画を追加",inPt:"ここを始点",outPt:"ここを終点",rangeDel:"範囲を消す",saveBtn:"保存する",saveTitle:"保存のしかた",saveJoin:"1本につなげて保存",saveJoinD:"すべてのクリップを今の順番で1本の動画にします",saveEach:"クリップごとに保存",saveEachD:"切ったクリップを別々の動画にします",saveHl:"★印の前後だけ保存",hlDesc:"★印{n}か所の前後をつないだ動画にします",hlDescNone:"★印がまだありません（再生中に「★ 印をつける」）",muteSave:"音声なしで保存",fastTitle:"保存の準備ができました",fastText:"画質は元のまま（再エンコードなし）です。\n「写真アプリに保存」を押し、次の画面で「ビデオを保存」を選ぶと写真アプリに入ります。",savePhotos:"写真アプリに保存",saveFiles:"ファイルに保存",snapText:"表示中の場面を画像にしました。\n「写真アプリに保存」→ 次の画面で「画像を保存」。",shareFail:"共有画面を開けませんでした。「ファイルに保存」したあと、ファイルアプリで開いて共有→「ビデオを保存」してください。",noShare:"この端末では写真アプリへ直接渡せません。「ファイルに保存」したあと、ファイルアプリで開いて共有→「ビデオを保存」してください。",emptySub:"複数選ぶと、選んだ順につながります",emptyTitle:"スマホで撮った動画を選んでください",loading:"読み込み中…",playErr:"再生を開始できませんでした",addVideo:"動画を選ぶ",
+  add:"追加",split:"分割",del:"削除",undo:"元に戻す",parts:"パートごとに保存",addMark:"マーカー",markAdded:"★ 印をつけました",pre:"前",post:"後",sec:"秒",hl:"ハイライトを作る",hlTimeline:"タイムラインをハイライトだけにする",sortDate:"撮影順",snap:"静止画",soundOn:"音声あり",soundOff:"音声なし",inSet:"始点を設定しました",outSet:"終点を設定しました",rangeNeed:"先に始点か終点を設定してください",sorted:"撮影日時の順に並べました",noDate:"撮影日時が分からない動画は最後に回しました",snapTitle:"静止画を保存",mutedNote:"（音声なし）",export:"結合して保存",
   
   support:"☕ このアプリを応援する",compatTitle:"高速保存できない組み合わせです",compatText:"撮影設定（解像度・コーデックなど）が違う動画が混ざっています。互換モードなら保存できますが、再生しながら書き出すため動画と同じ時間がかかります。",compatGo:"互換モードで保存",parseFail:"この動画は高速保存に対応していない形式のため、互換モードで保存します。",clip:"クリップ",exporting:"書き出し中…",exportText:"再生しながら書き出しています。画面を閉じたりアプリを切り替えたりしないでください。",
   cancel:"中止",done:"完了",saved:"保存できました",savedText:"ファイルをダウンロードしました。iPhoneは「ファイル」アプリ→保存したファイルを開き、共有ボタン→「ビデオを保存」で写真に入ります。",
   share:"共有／保存",close:"閉じる",noExport:"この端末のブラウザは書き出しに対応していません。Safari（iOS 14.3以降）またはChromeをお使いください。",
   leave:"編集中の内容は保存されません。移動しますか？",errLoad:"この動画は読み込めませんでした：",tooShort:"端に近すぎて分割できません"},
- en:{helpShort:"Help",helpTitle:"How to use",help:"<h3>3 basic steps</h3><ol><li>Tap “Choose videos” (pick several to join them in that order).</li><li>While playing, tap “✂ Cut here” at the <b>start</b> of a part you don't want and again at its <b>end</b>. Tap the clip in between on the timeline and “🗑 Delete”.</li><li>Tap “⤓ Save” → choose how → “Save to Photos” → “Save Video” on the next screen.</li></ol><h3>Gestures</h3><ul><li>Tap the center: play / pause</li><li>Double-tap right / left side: skip ±10s (keep tapping for 20s, 30s…)</li><li>Drag on the timeline: jump anywhere</li></ul><h3>★ Highlights</h3><ul><li>Tap “★ Mark” at goals etc. When saving, choose “Only around ★ marks” to collect just those moments.</li></ul><h3>Faster loading</h3><div class=\"note\">When you pick from the photo library, iOS converts the video first, so long videos take a while (about 1 min for 7 min).<br>In Photos, select the video → Share → “Save to Files”. Then in this app, Choose videos → “Choose File” and pick it there: no conversion, original quality, loads instantly.</div><h3>Good to know</h3><ul><li>Cuts snap to the nearest keyframe (usually within 1s).</li><li>Saving doesn't re-encode, so it's instant and keeps the quality of the loaded video.</li></ul>",slowLink:"Loading slowly?",slowTitle:"Faster loading",slowText:"When you pick from the photo library, iOS converts the video before handing it over, so long videos take a while (about 1 min for 7 min).\n\nTo speed up:\n① In Photos, select the video → Share → “Save to Files”\n② In this app, Choose videos → “Choose File” and pick it\n\nNo conversion, so it loads instantly in original quality.",tlHint:"Drag the timeline to move, tap a clip to select it",cutHere:"Cut here",markOn:"Mark",selNone:"Tap a clip on the timeline (after “✂ Cut here”) to delete, reorder or save it on its own.",moveL:"Earlier",moveR:"Later",saveThis:"Save this",more:"More tools",addMore:"Add video",rangeHelp:"Remove a long stretch (breaks etc.): set “In” and “Out” at the playhead, then “Delete range”",inPt:"Set In",outPt:"Set Out",rangeDel:"Delete range",saveBtn:"Save",saveTitle:"How to save",saveJoin:"Join into one video",saveJoinD:"All clips, in the current order, as one video",saveEach:"Save each clip",saveEachD:"Each cut clip as a separate video",saveHl:"Only around ★ marks",hlDesc:"Joins the moments around {n} ★ marks",hlDescNone:"No ★ marks yet (tap “★ Mark” while playing)",muteSave:"Save without sound",fastTitle:"Ready to save",fastText:"Original quality (no re-encoding).\nTap “Save to Photos”, then choose “Save Video” on the next screen.",savePhotos:"Save to Photos",saveFiles:"Save to Files",snapText:"The current frame was captured.\n“Save to Photos” → “Save Image” on the next screen.",shareFail:"Couldn't open the share screen. Use “Save to Files”, open it in the Files app, then Share → “Save Video”.",noShare:"This device can't hand the video to Photos directly. Use “Save to Files”, open it in the Files app, then Share → “Save Video”.",emptySub:"Pick several to join them in that order",emptyTitle:"Pick videos you shot on your phone",loading:"Loading…",playErr:"Could not start playback",addVideo:"Choose videos",
-  add:"Add",split:"Split",del:"Delete",undo:"Undo",parts:"Save each part",addMark:"Marker",markAdded:"★ Marker added",pre:"Before ",post:"After ",sec:"s",hl:"Make highlights",hlTitle:"Highlights",hlText:"Cuts {a}s before to {b}s after each marker ({n} scenes, {d} total).",hlOne:"Save as one video",hlEach:"Save separately",hlTimeline:"Keep only highlights in timeline",noMarks:"Tap \"★ Marker\" while playing to mark scenes like goals. Markers are kept on this device and come back when you open the same video.",markNeed:"Add a marker first",sortDate:"By date",snap:"Still",soundOn:"Sound on",soundOff:"Muted",inSet:"In point set",outSet:"Out point set",rangeNeed:"Set an In or Out point first",sorted:"Sorted by date shot",noDate:"Videos without a shooting date were put last",snapTitle:"Save still image",mutedNote:" (no sound)",export:"Join & save",
+ en:{mWatch:"Watch",mCut:"Cut",mStar:"Highlights",tipWatch:"Watch and check your video. Tap the center to play/pause, double-tap right/left to skip ±10s. Go to “Cut” to remove parts, or “Highlights” to collect moments like goals.",startOver:"Clear all and start over",startOverQ:"Close all videos and start over?",rangeTitle:"Remove a long stretch",rangeHelp:"For long parts like breaks: set “In” and “Out” at the playhead, then “Delete range”.",marksTitle:"Your ★ marks",noMarks:"While playing, tap “★ Mark” at moments you want to keep, like goals.",lenTitle:"Length kept per ★",before:"Before ★",after:"After ★",secU:"s",lenSum:"{n} ★ marks → highlights total about {d}",lenSumNone:"Each ★ keeps {a}s before + {b}s after = {c}s",hlPreview:"Play only the highlights",hlPreviewOff:"Back to the full video",hlTitle:"Save highlights",hlText:"Cuts {a}s before to {b}s after each ★ ({n} scenes, {d} total).",hlOne:"Save as one video",hlOneD:"Joins the ★ moments into one video",hlEach:"Save each scene",hlEachD:"Each ★ moment as a separate video",saveCut:"Save",saveStar:"Save highlights",dateLbl:"Order in Photos",dateOrig:"Keep shooting date\n(next to the original)",dateNow:"Today's date\n(at the newest spot)",markUndone:"Removed one ★ mark",markNone:"No ★ mark to undo",markNeed:"Add a ★ mark first",tlHint:"Drag the timeline to move, tap a clip to select it",help:"<h3>3 modes</h3><ul><li><b>Watch</b>: play and check. Add videos, sort by date, save a still, sound on/off.</li><li><b>Cut</b>: tap “✂ Cut here” at the <b>start</b> of an unwanted part and again at its <b>end</b>. Tap the clip in between and “Delete”.</li><li><b>Highlights</b>: tap “★ Mark” at goals etc., choose how many seconds to keep around each ★, then save.</li></ul><h3>Gestures</h3><ul><li>Tap the center: play / pause</li><li>Double-tap right / left: skip ±10s (keep tapping for 20s, 30s…), also in full screen</li><li>Drag the timeline: jump anywhere</li></ul><h3>Saving</h3><ul><li>Save button → “Save to Photos” → “Save Video” on the next screen.</li><li>Choose whether it appears at the original shooting date or as today's date in Photos.</li><li>No re-encoding: instant, same quality as the loaded video.</li></ul><h3>Faster loading</h3><div class=\"note\">When picked from the photo library, iOS converts the video first, so long videos take a while (about 1 min for 7 min).<br>In Photos, select the video → Share → “Save to Files”, then in this app Choose videos → “Choose File”: no conversion, original quality, loads instantly.</div>",helpShort:"Help",helpTitle:"How to use",slowLink:"Loading slowly?",slowTitle:"Faster loading",slowText:"When you pick from the photo library, iOS converts the video before handing it over, so long videos take a while (about 1 min for 7 min).\n\nTo speed up:\n① In Photos, select the video → Share → “Save to Files”\n② In this app, Choose videos → “Choose File” and pick it\n\nNo conversion, so it loads instantly in original quality.",cutHere:"Cut here",markOn:"Mark",selNone:"Tap a clip on the timeline (after “✂ Cut here”) to delete, reorder or save it on its own.",moveL:"Earlier",moveR:"Later",saveThis:"Save this",more:"More tools",addMore:"Add video",inPt:"Set In",outPt:"Set Out",rangeDel:"Delete range",saveBtn:"Save",saveTitle:"How to save",saveJoin:"Join into one video",saveJoinD:"All clips, in the current order, as one video",saveEach:"Save each clip",saveEachD:"Each cut clip as a separate video",saveHl:"Only around ★ marks",hlDesc:"Joins the moments around {n} ★ marks",hlDescNone:"No ★ marks yet (tap “★ Mark” while playing)",muteSave:"Save without sound",fastTitle:"Ready to save",fastText:"Original quality (no re-encoding).\nTap “Save to Photos”, then choose “Save Video” on the next screen.",savePhotos:"Save to Photos",saveFiles:"Save to Files",snapText:"The current frame was captured.\n“Save to Photos” → “Save Image” on the next screen.",shareFail:"Couldn't open the share screen. Use “Save to Files”, open it in the Files app, then Share → “Save Video”.",noShare:"This device can't hand the video to Photos directly. Use “Save to Files”, open it in the Files app, then Share → “Save Video”.",emptySub:"Pick several to join them in that order",emptyTitle:"Pick videos you shot on your phone",loading:"Loading…",playErr:"Could not start playback",addVideo:"Choose videos",
+  add:"Add",split:"Split",del:"Delete",undo:"Undo",parts:"Save each part",addMark:"Marker",markAdded:"★ Marked",pre:"Before ",post:"After ",sec:"s",hl:"Make highlights",hlTimeline:"Keep only highlights in timeline",sortDate:"By date",snap:"Still",soundOn:"Sound on",soundOff:"Muted",inSet:"In point set",outSet:"Out point set",rangeNeed:"Set an In or Out point first",sorted:"Sorted by date shot",noDate:"Videos without a shooting date were put last",snapTitle:"Save still image",mutedNote:" (no sound)",export:"Join & save",
   
   support:"☕ Support this app",compatTitle:"Can't fast-save this mix",compatText:"These videos were shot with different settings (resolution, codec…). Compatibility mode can still save them, but it records in real time and takes as long as the video.",compatGo:"Use compatibility mode",parseFail:"This video format can't be fast-saved, so compatibility mode will be used.",clip:"Clip",exporting:"Exporting…",exportText:"Recording while playing. Don't close the screen or switch apps.",
   cancel:"Cancel",done:"Done",saved:"Saved",savedText:"The file was downloaded. On iPhone: Files app → open it → Share → \"Save Video\" to add it to Photos.",
   share:"Share / Save",close:"Close",noExport:"This browser can't export. Please use Safari (iOS 14.3+) or Chrome.",
   leave:"Your edits will be lost. Leave?",errLoad:"Couldn't load this video: ",tooShort:"Too close to an edge to split"},
- zh:{helpShort:"说明",helpTitle:"使用说明",help:"<h3>基本3步</h3><ol><li>点“选择视频”（选多个会按选择顺序拼接）。</li><li>边播放边在不需要的场面<b>开头</b>点“✂ 在此剪开”，<b>结尾</b>再点一次。点时间轴上中间的片段，再点“🗑 删除”。</li><li>点下方“⤓ 保存”→ 选择保存方式 →“存到照片”→ 在下一个画面选“存储视频”。</li></ol><h3>画面操作</h3><ul><li>点画面中央：播放／暂停</li><li>双击画面右侧／左侧：快进／快退10秒（连续点为20秒、30秒…）</li><li>在时间轴上滑动：跳到任意位置</li></ul><h3>用★标记做精彩片段</h3><ul><li>在进球等场面点“★ 做标记”。保存时选“只保存★标记前后”，即可得到只含这些场面的视频。</li></ul><h3>加快读取</h3><div class=\"note\">从照片图库选择时，iPhone会先转换视频再交给浏览器，视频越长越慢（7分钟约1分钟）。<br>先在照片App选中视频→“分享”→“存储到‘文件’”，再在本应用“选择视频”→“选取文件”选它，就不会转换，以原画质立即读取。</div><h3>小提示</h3><ul><li>剪开位置会对齐到最近的关键帧（通常误差1秒以内）。</li><li>保存不重新编码，瞬间完成，画质与读取的视频相同。</li></ul>",slowLink:"读取太慢？",slowTitle:"加快读取",slowText:"从照片图库选择时，iPhone会先转换视频再交给浏览器，视频越长越慢（7分钟约1分钟）。\n\n加快方法：\n① 在照片App选中视频→“分享”→“存储到‘文件’”\n② 在本应用“选择视频”→“选取文件”选它\n\n不会转换，立即读取，画质不变。",tlHint:"在时间轴上滑动可移动，点片段可选中",cutHere:"在此剪开",markOn:"做标记",selNone:"用“✂ 在此剪开”分开后，点时间轴上的片段即可删除、调整顺序或单独保存。",moveL:"往前",moveR:"往后",saveThis:"只存这段",more:"更多功能",addMore:"添加视频",rangeHelp:"一次删除休息等长段：在播放位置设“起点”“终点”，再点“删除范围”",inPt:"设为起点",outPt:"设为终点",rangeDel:"删除范围",saveBtn:"保存",saveTitle:"保存方式",saveJoin:"合并为一个视频",saveJoinD:"按当前顺序把所有片段合成一个视频",saveEach:"每个片段分别保存",saveEachD:"把剪开的片段存为单独的视频",saveHl:"只保存★标记前后",hlDesc:"把{n}处★标记前后的场面连成一个视频",hlDescNone:"还没有★标记（播放时点“★ 做标记”）",muteSave:"保存为无声视频",fastTitle:"已准备好保存",fastText:"画质保持原样（不重新编码）。\n点“存到照片”，在下一个画面选“存储视频”即可存入照片App。",savePhotos:"存到照片",saveFiles:"存到文件",snapText:"已将当前画面存为图片。\n“存到照片”→ 下一个画面选“存储图像”。",shareFail:"无法打开分享画面。请“存到文件”，再在文件App中打开→分享→“存储视频”。",noShare:"此设备无法直接存入照片App。请“存到文件”，再在文件App中打开→分享→“存储视频”。",emptySub:"选多个会按选择顺序拼接",emptyTitle:"请选择用手机拍摄的视频",loading:"加载中…",playErr:"无法开始播放",addVideo:"选择视频",
-  add:"添加",split:"分割",del:"删除",undo:"撤销",parts:"分别保存",addMark:"标记",markAdded:"★ 已添加标记",pre:"前",post:"后",sec:"秒",hl:"制作精彩片段",hlTitle:"精彩片段",hlText:"截取每个标记前{a}秒到后{b}秒（{n}处，共{d}）。",hlOne:"合并为一个视频保存",hlEach:"分别保存",hlTimeline:"时间轴只保留精彩片段",noMarks:"播放时点“★ 标记”，可以给进球等场面做记号。标记保存在本设备中，再次打开同一视频时会恢复。",markNeed:"请先添加标记",sortDate:"按拍摄时间",snap:"截图",soundOn:"有声音",soundOff:"静音",inSet:"已设置起点",outSet:"已设置终点",rangeNeed:"请先设置起点或终点",sorted:"已按拍摄时间排序",noDate:"无拍摄时间的视频已排在最后",snapTitle:"保存截图",mutedNote:"（无声音）",export:"合并并保存",
+ zh:{mWatch:"观看",mCut:"剪辑",mStar:"精彩片段",tipWatch:"播放确认的模式。点画面中央播放／暂停，双击右侧／左侧快进／快退10秒。要删掉不需要的部分请到“剪辑”，只收集进球等场面请到“精彩片段”。",startOver:"全部清除重新开始",startOverQ:"要关闭所有视频，从头开始吗？",rangeTitle:"一次删除长段",rangeHelp:"休息等较长的部分：在播放位置设“起点”“终点”，再点“删除范围”。",marksTitle:"已做的★标记",noMarks:"边播放边在进球等想保留的场面点“★ 做标记”。",lenTitle:"每个★保留的长度",before:"★之前",after:"★之后",secU:"秒",lenSum:"{n}个★ → 精彩片段合计约{d}",lenSumNone:"每个★保留前{a}秒＋后{b}秒＝{c}秒",hlPreview:"只播放精彩片段确认",hlPreviewOff:"回到原视频",hlTitle:"保存精彩片段",hlText:"截取每个★前{a}秒到后{b}秒（{n}处，共{d}）。",hlOne:"合并为一个视频保存",hlOneD:"把★的场面连成一个视频",hlEach:"每个场面分别保存",hlEachD:"把每个★场面存为单独的视频",saveCut:"保存",saveStar:"保存精彩片段",dateLbl:"在照片App中的排列",dateOrig:"保留拍摄日期\n（原视频旁边）",dateNow:"今天的日期\n（最新的位置）",markUndone:"已撤销一个★标记",markNone:"没有可撤销的★标记",markNeed:"请先做★标记",tlHint:"在时间轴上滑动可移动，点片段可选中",help:"<h3>3种模式</h3><ul><li><b>观看</b>：播放确认。也可添加视频、按拍摄时间排序、截图、开关声音。</li><li><b>剪辑</b>：在不需要的场面<b>开头</b>点“✂ 在此剪开”，<b>结尾</b>再点一次。点中间的片段再点“删除”。</li><li><b>精彩片段</b>：在进球等场面点“★ 做标记”，设定★前后保留几秒后保存。</li></ul><h3>画面操作</h3><ul><li>点画面中央：播放／暂停</li><li>双击右侧／左侧：快进／快退10秒（连续点为20秒、30秒…），全屏时也可用</li><li>在时间轴上滑动：跳到任意位置</li></ul><h3>保存</h3><ul><li>保存按钮 →“存到照片”→ 下一个画面选“存储视频”。</li><li>可选择在照片App中按“拍摄日期”或“今天的日期”排列。</li><li>不重新编码，瞬间完成，画质与读取的视频相同。</li></ul><h3>加快读取</h3><div class=\"note\">从照片图库选择时，iPhone会先转换视频，视频越长越慢（7分钟约1分钟）。<br>先在照片App选中视频→“分享”→“存储到‘文件’”，再在本应用“选择视频”→“选取文件”选它，就不会转换，以原画质立即读取。</div>",helpShort:"说明",helpTitle:"使用说明",slowLink:"读取太慢？",slowTitle:"加快读取",slowText:"从照片图库选择时，iPhone会先转换视频再交给浏览器，视频越长越慢（7分钟约1分钟）。\n\n加快方法：\n① 在照片App选中视频→“分享”→“存储到‘文件’”\n② 在本应用“选择视频”→“选取文件”选它\n\n不会转换，立即读取，画质不变。",cutHere:"在此剪开",markOn:"做标记",selNone:"用“✂ 在此剪开”分开后，点时间轴上的片段即可删除、调整顺序或单独保存。",moveL:"往前",moveR:"往后",saveThis:"只存这段",more:"更多功能",addMore:"添加视频",inPt:"设为起点",outPt:"设为终点",rangeDel:"删除范围",saveBtn:"保存",saveTitle:"保存方式",saveJoin:"合并为一个视频",saveJoinD:"按当前顺序把所有片段合成一个视频",saveEach:"每个片段分别保存",saveEachD:"把剪开的片段存为单独的视频",saveHl:"只保存★标记前后",hlDesc:"把{n}处★标记前后的场面连成一个视频",hlDescNone:"还没有★标记（播放时点“★ 做标记”）",muteSave:"保存为无声视频",fastTitle:"已准备好保存",fastText:"画质保持原样（不重新编码）。\n点“存到照片”，在下一个画面选“存储视频”即可存入照片App。",savePhotos:"存到照片",saveFiles:"存到文件",snapText:"已将当前画面存为图片。\n“存到照片”→ 下一个画面选“存储图像”。",shareFail:"无法打开分享画面。请“存到文件”，再在文件App中打开→分享→“存储视频”。",noShare:"此设备无法直接存入照片App。请“存到文件”，再在文件App中打开→分享→“存储视频”。",emptySub:"选多个会按选择顺序拼接",emptyTitle:"请选择用手机拍摄的视频",loading:"加载中…",playErr:"无法开始播放",addVideo:"选择视频",
+  add:"添加",split:"分割",del:"删除",undo:"撤销",parts:"分别保存",addMark:"标记",markAdded:"★ 已做标记",pre:"前",post:"后",sec:"秒",hl:"制作精彩片段",hlTimeline:"时间轴只保留精彩片段",sortDate:"按拍摄时间",snap:"截图",soundOn:"有声音",soundOff:"静音",inSet:"已设置起点",outSet:"已设置终点",rangeNeed:"请先设置起点或终点",sorted:"已按拍摄时间排序",noDate:"无拍摄时间的视频已排在最后",snapTitle:"保存截图",mutedNote:"（无声音）",export:"合并并保存",
   
   support:"☕ 支持这个应用",compatTitle:"无法快速保存此组合",compatText:"混有拍摄设置（分辨率、编码等）不同的视频。兼容模式可以保存，但需边播放边录制，耗时与视频长度相同。",compatGo:"用兼容模式保存",parseFail:"此视频格式不支持快速保存，将使用兼容模式。",clip:"片段",exporting:"导出中…",exportText:"正在边播放边录制。请不要关闭画面或切换应用。",
   cancel:"取消",done:"完成",saved:"已保存",savedText:"文件已下载。iPhone：在“文件”App中打开→分享→“存储视频”即可存入照片。",
   share:"分享／保存",close:"关闭",noExport:"此浏览器不支持导出。请使用 Safari（iOS 14.3以上）或 Chrome。",
   leave:"编辑内容将丢失，确定离开吗？",errLoad:"无法读取此视频：",tooShort:"太靠近边缘，无法分割"},
- "zh-Hant":{helpShort:"說明",helpTitle:"使用說明",help:"<h3>基本3步</h3><ol><li>點「選擇影片」（選多個會按選擇順序拼接）。</li><li>邊播放邊在不需要的場面<b>開頭</b>點「✂ 在此剪開」，<b>結尾</b>再點一次。點時間軸上中間的片段，再點「🗑 刪除」。</li><li>點下方「⤓ 儲存」→ 選擇儲存方式 →「存到照片」→ 在下一個畫面選「儲存影片」。</li></ol><h3>畫面操作</h3><ul><li>點畫面中央：播放／暫停</li><li>雙擊畫面右側／左側：快進／快退10秒（連續點為20秒、30秒…）</li><li>在時間軸上滑動：跳到任意位置</li></ul><h3>用★標記做精彩片段</h3><ul><li>在進球等場面點「★ 做標記」。儲存時選「只儲存★標記前後」，即可得到只含這些場面的影片。</li></ul><h3>加快讀取</h3><div class=\"note\">從照片相簿選擇時，iPhone會先轉換影片再交給瀏覽器，影片越長越慢（7分鐘約1分鐘）。<br>先在照片App選中影片→「分享」→「儲存到『檔案』」，再在本應用「選擇影片」→「選取檔案」選它，就不會轉換，以原畫質立即讀取。</div><h3>小提示</h3><ul><li>剪開位置會對齊到最近的關鍵幀（通常誤差1秒以內）。</li><li>儲存不重新編碼，瞬間完成，畫質與讀取的影片相同。</li></ul>",slowLink:"讀取太慢？",slowTitle:"加快讀取",slowText:"從照片相簿選擇時，iPhone會先轉換影片再交給瀏覽器，影片越長越慢（7分鐘約1分鐘）。\n\n加快方法：\n① 在照片App選中影片→「分享」→「儲存到『檔案』」\n② 在本應用「選擇影片」→「選取檔案」選它\n\n不會轉換，立即讀取，畫質不變。",tlHint:"在時間軸上滑動可移動，點片段可選中",cutHere:"在此剪開",markOn:"做標記",selNone:"用「✂ 在此剪開」分開後，點時間軸上的片段即可刪除、調整順序或單獨儲存。",moveL:"往前",moveR:"往後",saveThis:"只存這段",more:"更多功能",addMore:"新增影片",rangeHelp:"一次刪除休息等長段：在播放位置設「起點」「終點」，再點「刪除範圍」",inPt:"設為起點",outPt:"設為終點",rangeDel:"刪除範圍",saveBtn:"儲存",saveTitle:"儲存方式",saveJoin:"合併為一個影片",saveJoinD:"按當前順序把所有片段合成一個影片",saveEach:"每個片段分別儲存",saveEachD:"把剪開的片段存為單獨的影片",saveHl:"只儲存★標記前後",hlDesc:"把{n}處★標記前後的場面連成一個影片",hlDescNone:"還沒有★標記（播放時點「★ 做標記」）",muteSave:"儲存為無聲影片",fastTitle:"已準備好儲存",fastText:"畫質保持原樣（不重新編碼）。\n點「存到照片」，在下一個畫面選「儲存影片」即可存入照片App。",savePhotos:"存到照片",saveFiles:"存到檔案",snapText:"已將當前畫面存為圖片。\n「存到照片」→ 下一個畫面選「儲存影象」。",shareFail:"無法開啟分享畫面。請「存到檔案」，再在檔案App中開啟→分享→「儲存影片」。",noShare:"此裝置無法直接存入照片App。請「存到檔案」，再在檔案App中開啟→分享→「儲存影片」。",emptySub:"選多個會按選擇順序拼接",emptyTitle:"請選擇用手機拍攝的影片",loading:"載入中…",playErr:"無法開始播放",addVideo:"選擇影片",
-  add:"新增",split:"分割",del:"刪除",undo:"復原",parts:"分別儲存",addMark:"標記",markAdded:"★ 已新增標記",pre:"前",post:"後",sec:"秒",hl:"製作精彩片段",hlTitle:"精彩片段",hlText:"擷取每個標記前{a}秒到後{b}秒（{n}處，共{d}）。",hlOne:"合併為一個影片儲存",hlEach:"分別儲存",hlTimeline:"時間軸只保留精彩片段",noMarks:"播放時點「★ 標記」，可以給進球等場面做記號。標記儲存在本裝置中，再次開啟同一影片時會恢復。",markNeed:"請先新增標記",sortDate:"按拍攝時間",snap:"截圖",soundOn:"有聲音",soundOff:"靜音",inSet:"已設定起點",outSet:"已設定終點",rangeNeed:"請先設定起點或終點",sorted:"已按拍攝時間排序",noDate:"無拍攝時間的影片已排在最後",snapTitle:"儲存截圖",mutedNote:"（無聲音）",export:"合併並儲存",
+ "zh-Hant":{mWatch:"觀看",mCut:"剪輯",mStar:"精彩片段",tipWatch:"播放確認的模式。點畫面中央播放／暫停，雙擊右側／左側快進／快退10秒。要刪掉不需要的部分請到「剪輯」，只收集進球等場面請到「精彩片段」。",startOver:"全部清除重新開始",startOverQ:"要關閉所有影片，從頭開始嗎？",rangeTitle:"一次刪除長段",rangeHelp:"休息等較長的部分：在播放位置設「起點」「終點」，再點「刪除範圍」。",marksTitle:"已做的★標記",noMarks:"邊播放邊在進球等想保留的場面點「★ 做標記」。",lenTitle:"每個★保留的長度",before:"★之前",after:"★之後",secU:"秒",lenSum:"{n}個★ → 精彩片段合計約{d}",lenSumNone:"每個★保留前{a}秒＋後{b}秒＝{c}秒",hlPreview:"只播放精彩片段確認",hlPreviewOff:"回到原影片",hlTitle:"儲存精彩片段",hlText:"擷取每個★前{a}秒到後{b}秒（{n}處，共{d}）。",hlOne:"合併為一個影片儲存",hlOneD:"把★的場面連成一個影片",hlEach:"每個場面分別儲存",hlEachD:"把每個★場面存為單獨的影片",saveCut:"儲存",saveStar:"儲存精彩片段",dateLbl:"在照片App中的排列",dateOrig:"保留拍攝日期\n（原影片旁邊）",dateNow:"今天的日期\n（最新的位置）",markUndone:"已復原一個★標記",markNone:"沒有可復原的★標記",markNeed:"請先做★標記",tlHint:"在時間軸上滑動可移動，點片段可選中",help:"<h3>3種模式</h3><ul><li><b>觀看</b>：播放確認。也可新增影片、按拍攝時間排序、截圖、開關聲音。</li><li><b>剪輯</b>：在不需要的場面<b>開頭</b>點「✂ 在此剪開」，<b>結尾</b>再點一次。點中間的片段再點「刪除」。</li><li><b>精彩片段</b>：在進球等場面點「★ 做標記」，設定★前後保留幾秒後儲存。</li></ul><h3>畫面操作</h3><ul><li>點畫面中央：播放／暫停</li><li>雙擊右側／左側：快進／快退10秒（連續點為20秒、30秒…），全屏時也可用</li><li>在時間軸上滑動：跳到任意位置</li></ul><h3>儲存</h3><ul><li>儲存按鈕 →「存到照片」→ 下一個畫面選「儲存影片」。</li><li>可選擇在照片App中按「拍攝日期」或「今天的日期」排列。</li><li>不重新編碼，瞬間完成，畫質與讀取的影片相同。</li></ul><h3>加快讀取</h3><div class=\"note\">從照片相簿選擇時，iPhone會先轉換影片，影片越長越慢（7分鐘約1分鐘）。<br>先在照片App選中影片→「分享」→「儲存到『檔案』」，再在本應用「選擇影片」→「選取檔案」選它，就不會轉換，以原畫質立即讀取。</div>",helpShort:"說明",helpTitle:"使用說明",slowLink:"讀取太慢？",slowTitle:"加快讀取",slowText:"從照片相簿選擇時，iPhone會先轉換影片再交給瀏覽器，影片越長越慢（7分鐘約1分鐘）。\n\n加快方法：\n① 在照片App選中影片→「分享」→「儲存到『檔案』」\n② 在本應用「選擇影片」→「選取檔案」選它\n\n不會轉換，立即讀取，畫質不變。",cutHere:"在此剪開",markOn:"做標記",selNone:"用「✂ 在此剪開」分開後，點時間軸上的片段即可刪除、調整順序或單獨儲存。",moveL:"往前",moveR:"往後",saveThis:"只存這段",more:"更多功能",addMore:"新增影片",inPt:"設為起點",outPt:"設為終點",rangeDel:"刪除範圍",saveBtn:"儲存",saveTitle:"儲存方式",saveJoin:"合併為一個影片",saveJoinD:"按當前順序把所有片段合成一個影片",saveEach:"每個片段分別儲存",saveEachD:"把剪開的片段存為單獨的影片",saveHl:"只儲存★標記前後",hlDesc:"把{n}處★標記前後的場面連成一個影片",hlDescNone:"還沒有★標記（播放時點「★ 做標記」）",muteSave:"儲存為無聲影片",fastTitle:"已準備好儲存",fastText:"畫質保持原樣（不重新編碼）。\n點「存到照片」，在下一個畫面選「儲存影片」即可存入照片App。",savePhotos:"存到照片",saveFiles:"存到檔案",snapText:"已將當前畫面存為圖片。\n「存到照片」→ 下一個畫面選「儲存影象」。",shareFail:"無法開啟分享畫面。請「存到檔案」，再在檔案App中開啟→分享→「儲存影片」。",noShare:"此裝置無法直接存入照片App。請「存到檔案」，再在檔案App中開啟→分享→「儲存影片」。",emptySub:"選多個會按選擇順序拼接",emptyTitle:"請選擇用手機拍攝的影片",loading:"載入中…",playErr:"無法開始播放",addVideo:"選擇影片",
+  add:"新增",split:"分割",del:"刪除",undo:"復原",parts:"分別儲存",addMark:"標記",markAdded:"★ 已做標記",pre:"前",post:"後",sec:"秒",hl:"製作精彩片段",hlTimeline:"時間軸只保留精彩片段",sortDate:"按拍攝時間",snap:"截圖",soundOn:"有聲音",soundOff:"靜音",inSet:"已設定起點",outSet:"已設定終點",rangeNeed:"請先設定起點或終點",sorted:"已按拍攝時間排序",noDate:"無拍攝時間的影片已排在最後",snapTitle:"儲存截圖",mutedNote:"（無聲音）",export:"合併並儲存",
   
   support:"☕ 支援這個應用",compatTitle:"無法快速儲存此組合",compatText:"混有拍攝設定（解析度、編碼等）不同的影片。相容模式可以儲存，但需邊播放邊錄製，耗時與影片長度相同。",compatGo:"用相容模式儲存",parseFail:"此影片格式不支援快速儲存，將使用相容模式。",clip:"片段",exporting:"匯出中…",exportText:"正在邊播放邊錄製。請不要關閉畫面或切換應用。",
   cancel:"取消",done:"完成",saved:"已儲存",savedText:"檔案已下載。iPhone：在「檔案」App中開啟→分享→「儲存影片」即可存入照片。",
@@ -318,7 +446,7 @@ function applyLang(){
     el.textContent=v;
   });
   $("#helpBody").innerHTML=t("help");
-  $("#lang").value=lang; renderList(); updateBadges(); if(document.getElementById("muteLbl")){ renderMute(); labelSels(); renderMarks(); }
+  $("#lang").value=lang; renderList(); updateBadges(); if(document.getElementById("muteLbl")){ renderMute(); renderMarks(); renderDate(); $("#exportLbl").textContent=t(document.body.dataset.mode==="star"?"saveStar":"saveCut"); $("#previewBtn").lastChild.textContent=t(preview?"hlPreviewOff":"hlPreview"); }
 }
 
 /* ===== 状態 ===== */
@@ -352,8 +480,9 @@ $("#addFirst").onclick=$("#addBtn").onclick=()=>$("#file").click();
 $("#file").onchange=async e=>{
   const files=[...e.target.files]; e.target.value="";
   if(!files.length) return;
-  snapshot(); clearRange();
   const wasEmpty=!segs.length;
+  if(wasEmpty) resetAll(); else snapshot();   // 前の動画をメモリから解放してから読み込む
+  clearRange();
   let done=0; const show=()=>{ $("#empty .big").textContent=`${t("loading")} ${done}/${files.length}`; }; show();
   const results=await Promise.allSettled(files.map(f=>loadSource(f).finally(()=>{ done++; show(); })));
   results.forEach((r,i)=>{
@@ -361,7 +490,7 @@ $("#file").onchange=async e=>{
     else alert(t("errLoad")+files[i].name+"\n("+(r.reason&&r.reason.message||"")+")");
   });
   $("#empty .big").textContent=t("emptyTitle");
-  if(wasEmpty && segs.length){ cur=0; selected=0; await activate(0,segs[0].start); }
+  if(wasEmpty && segs.length){ cur=0; selected=document.body.dataset.mode==="cut"?0:-1; await activate(0,segs[0].start); }
   refresh();
 };
 // iPhone対策：動画要素を先に画面へ置いてから読み込む。
@@ -463,13 +592,14 @@ async function seekGlobal(g){
   updateUI();
 }
 function setPlaying(p){
-  playing=p; $("#play").textContent=p?"❚❚":"▶";
+  playing=p; const h=ico(p?"pause":"play"); $("#play").innerHTML=`<i class="ic">${h}</i>`; $("#fsPlay").innerHTML=`<i class="ic">${h}</i>`;
+  if(document.body.classList.contains("fsmode")) showFsBar();
 }
 // iPhoneは「タップの処理の中で」始めた再生しか許さないため、待ち処理を挟まずに play() を呼ぶ
 function togglePlay(){
   if(!segs.length) return;
   const v=activeVideo();
-  if(playing){ setPlaying(false); v.pause(); flashCenter("❚❚"); return; }
+  if(playing){ setPlaying(false); v.pause(); flashCenter(ico("pause")); return; }
   if(globalTime()>=total()-0.1){ // 最後まで再生済みなら先頭へ（同期的に切り替え）
     const s0=segs[0], v0=srcOf(s0).video;
     if(v!==v0){ v.pause(); v.classList.remove("on"); }
@@ -483,7 +613,7 @@ function startPlay(){
   const p=v.play();
   if(p&&p.catch) p.catch(e=>{ if(activeVideo()===v){ setPlaying(false); toast(t("playErr")+" ("+e.name+")"); } });
   unlockOthers(v);
-  flashCenter("▶");
+  flashCenter(ico("play"));
 }
 // 2本目以降の動画も、最初のタップのときに再生許可を得ておく（クリップをまたいだ自動再生のため）
 function unlockOthers(except){
@@ -496,21 +626,28 @@ function unlockOthers(except){
 fastTap($("#play"),togglePlay);
 fastTap($("#back10"),()=>skip(-SKIP));
 fastTap($("#fwd10"),()=>skip(SKIP));
+fastTap($("#fsPlay"),()=>{ togglePlay(); showFsBar(); });
+fastTap($("#fsBack"),()=>{ skip(-SKIP); showFsBar(); });
+fastTap($("#fsFwd"),()=>{ skip(SKIP); showFsBar(); });
+fastTap($("#fsStar"),()=>{ addMark(); showFsBar(); });
 function skip(d){ if(!segs.length) return; seekGlobal(globalTime()+d); ripple(d>0?"r":"l"); }
 $("#speed").onclick=()=>{
   const list=[1,1.5,2,0.5]; rate=list[(list.indexOf(rate)+1)%list.length];
   $("#speed").textContent=rate+"x"; const v=activeVideo(); if(v) v.playbackRate=rate;
 };
-$("#fs").onclick=()=>{
-  const v=activeVideo();
-  if(stage.requestFullscreen) { document.fullscreenElement?document.exitFullscreen():stage.requestFullscreen().catch(()=>{}); }
-  else if(v && v.webkitEnterFullscreen) v.webkitEnterFullscreen(); // iPhone
-};
+// iPhoneの標準の全画面ではダブルタップが効かないため、アプリ内で画面いっぱいに広げる
+function setFs(on){ document.body.classList.toggle("fsmode",on); if(on) showFsBar(); setTimeout(()=>{ renderTimeline(); updateUI(); },50); }
+let fsTimer=null;
+function showFsBar(){ const b=$("#fsBar"); b.classList.remove("hide"); clearTimeout(fsTimer); fsTimer=setTimeout(()=>{ if(playing) b.classList.add("hide"); },3000); }
+$("#fs").onclick=()=>{ if(segs.length) setFs(true); };
+$("#fsExit").onclick=()=>setFs(false);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") setFs(false); });
 
 /* ダブルタップ判定（YouTube風） */
 let lastTap={t:0,x:0,side:null}, tapTimer=null, chain=0;
 function stageTap(clientX){
   if(!segs.length||exporting) return;
+  if(document.body.classList.contains("fsmode")) showFsBar();
   const r=stage.getBoundingClientRect(); const x=clientX-r.left;
   const side = x<r.width*0.4?"l": x>r.width*0.6?"r":"c";
   const now=performance.now();
@@ -528,13 +665,14 @@ function stageTap(clientX){
 let touchStart=null;
 stage.addEventListener("touchstart",e=>{ const p=e.changedTouches[0]; touchStart={x:p.clientX,y:p.clientY}; },{passive:true});
 stage.addEventListener("touchend",e=>{
-  if(e.target.closest("#empty")) return;   // 「動画を選ぶ」ボタンなどは通常どおり
+  if(e.target.closest("#empty")||e.target.closest("#fsBar")) return;   // 「動画を選ぶ」ボタンなどは通常どおり
   e.preventDefault();
   const p=e.changedTouches[0];
   if(touchStart&&Math.hypot(p.clientX-touchStart.x,p.clientY-touchStart.y)>12) return; // なぞっただけ
   stageTap(p.clientX);
 },{passive:false});
-stage.addEventListener("pointerup",e=>{ if(e.pointerType!=="touch"&&!e.target.closest("#empty")) stageTap(e.clientX); });
+$("#fsBar").addEventListener("touchend",e=>e.stopPropagation());
+stage.addEventListener("pointerup",e=>{ if(e.pointerType!=="touch"&&!e.target.closest("#empty")&&!e.target.closest("#fsBar")) stageTap(e.clientX); });
 // 連打するボタンも touchend で即実行（拡大させない・取りこぼさない）
 function fastTap(el,fn){
   el.addEventListener("touchend",e=>{ e.preventDefault(); if(!el.disabled) fn(); },{passive:false});
@@ -551,7 +689,7 @@ function showRippleCount(side,n){
   clearTimeout(el._c); el._c=setTimeout(()=>{ el.querySelector("span").textContent= side==="r"?"10s »":"« 10s"; },700);
 }
 function flashCenter(txt){
-  const c=$("#centerIcon"); c.classList.remove("msg"); c.textContent=txt; c.classList.add("show");
+  const c=$("#centerIcon"); c.classList.remove("msg"); c.innerHTML=txt?`<i class="ic" style="width:30px;height:30px">${txt}</i>`:""; c.classList.add("show");
   clearTimeout(c._t); c._t=setTimeout(()=>c.classList.remove("show"),450);
 }
 
@@ -578,7 +716,7 @@ timeline.addEventListener("pointermove",e=>{ if(dragging) scrub(e); });
 timeline.addEventListener("pointerup",e=>{
   if(!dragging) return; dragging=false;
   if(Math.abs(e.clientX-downPos.x)<6){ // タップ＝選択
-    const i=segIndexAtX(e.clientX); if(i>=0){ selected=i; renderTimeline(); renderList(); }
+    const i=segIndexAtX(e.clientX); if(i>=0&&document.body.dataset.mode==="cut"){ selected=i; renderTimeline(); renderList(); refresh(); }
   }
 });
 function xToGlobal(clientX){
@@ -706,32 +844,50 @@ function renderMarks(){
   const box=$("#markChips"); box.innerHTML="";
   ms.forEach(m=>{
     const c=document.createElement("div"); c.className="chip";
-    c.innerHTML=`<span>★ ${fmt(m.g)}</span><button aria-label="delete">✕</button>`;
+    c.innerHTML=`<span>★ ${fmt(m.g)}</span><button aria-label="delete"><i class="ic">${ico("x")}</i></button>`;
     c.firstChild.onclick=()=>seekGlobal(m.g);
     c.querySelector("button").onclick=e=>{ e.stopPropagation(); m.src.markers=m.src.markers.filter(x=>x!==m.t); mkStore(); refresh(); };
     box.appendChild(c);
   });
-  $("#hlBtn").disabled=!ms.length;
-  $("#hlDesc").textContent=ms.length?t("hlDesc").replace("{n}",ms.length):t("hlDescNone");
+  $("#noMarks").hidden=ms.length>0;
+  renderLen();
 }
-$("#markBtn").onclick=()=>{
+// ★を付ける（ハイライトモード・全画面の★ボタン）
+const markStack=[];
+function addMark(){
   const s=segs[cur]; if(!s) return;
   const src=srcOf(s), tt=src.video.currentTime;
   if(src.markers.some(x=>Math.abs(x-tt)<0.5)) return;
-  src.markers.push(tt); src.markers.sort((a,b)=>a-b); mkStore();
+  src.markers.push(tt); src.markers.sort((a,b)=>a-b); markStack.push({src,t:tt}); mkStore();
   toast(t("markAdded")); refresh();
+}
+fastTap($("#markBtn"),addMark);
+$("#undoMarkBtn").onclick=()=>{
+  const m=markStack.pop(); if(!m){ toast(t("markNone")); return; }
+  m.src.markers=m.src.markers.filter(x=>x!==m.t); mkStore(); toast(t("markUndone")); refresh();
 };
-function fillSel(sel,vals,key,def){
-  const v=+(localStorage.getItem(key)||def); sel.innerHTML=vals.map(n=>`<option value="${n}">${n}</option>`).join(""); sel.value=v;
-  sel.onchange=()=>{ try{ localStorage.setItem(key,sel.value); }catch(e){} };
+// ★の前後の秒数（＋−で選ぶ）
+const LENS=[0,2,3,5,8,10,15,20,30,45,60];
+const hl={pre:+(localStorage.getItem("cj_pre")||10), post:+(localStorage.getItem("cj_post")||5)};
+function stepLen(k,d){
+  let i=LENS.indexOf(hl[k]); if(i<0) i=LENS.findIndex(v=>v>=hl[k]);
+  i=Math.max(0,Math.min(LENS.length-1,i+d)); hl[k]=LENS[i];
+  if(hl.pre+hl.post<2) hl[k]=LENS[Math.min(LENS.length-1,i+1)];
+  try{ localStorage.setItem("cj_"+k,hl[k]); }catch(e){}
+  renderLen();
 }
-function labelSels(){
-  [...$("#preSel").options].forEach(o=>o.textContent=t("pre")+o.value+t("sec"));
-  [...$("#postSel").options].forEach(o=>o.textContent=t("post")+o.value+t("sec"));
+fastTap($("#preMinus"),()=>stepLen("pre",-1)); fastTap($("#prePlus"),()=>stepLen("pre",1));
+fastTap($("#postMinus"),()=>stepLen("post",-1)); fastTap($("#postPlus"),()=>stepLen("post",1));
+function renderLen(){
+  $("#preV").textContent=hl.pre+t("secU"); $("#postV").textContent=hl.post+t("secU");
+  const sum=hl.pre+hl.post||1; $("#lenA").style.flex=hl.pre/sum; $("#lenB").style.flex=hl.post/sum;
+  const n=visibleMarks().length;
+  if(n&&!preview){ const {parts}=highlightParts(); const d=parts.reduce((a,p)=>a+segLen(p),0); $("#lenSum").textContent=t("lenSum").replace("{n}",n).replace("{d}",fmt(d)); }
+  else $("#lenSum").textContent=t("lenSumNone").replace("{a}",hl.pre).replace("{b}",hl.post).replace("{c}",hl.pre+hl.post);
 }
-// マーカー前後の範囲（全体時刻）→ 元動画上のパーツ
+// ★の前後の範囲（全体時刻）→ 元動画上のパーツ
 function highlightParts(){
-  const pre=+$("#preSel").value, post=+$("#postSel").value, T=total();
+  const pre=hl.pre, post=hl.post, T=total();
   const rs=[]; visibleMarks().forEach(m=>{ const a=Math.max(0,m.g-pre), b=Math.min(T,m.g+post);
     if(rs.length&&a<=rs[rs.length-1][1]) rs[rs.length-1][1]=Math.max(rs[rs.length-1][1],b); else rs.push([a,b]); });
   const parts=[]; let acc=0;
@@ -743,17 +899,18 @@ function highlightParts(){
     acc+=Ls; });
   return {parts,count:rs.length};
 }
-$("#hlBtn").onclick=()=>{
-  closeSheets();
-  const {parts,count}=highlightParts();
-  if(!parts.length){ toast(t("markNeed")); return; }
+// ハイライトだけを再生して確認（もう一度押すと元に戻る）
+let preview=null;
+$("#previewBtn").onclick=async()=>{
   if(playing){ setPlaying(false); activeVideo().pause(); }
-  const d=parts.reduce((a,p)=>a+segLen(p),0);
-  showModal(t("hlTitle"),t("hlText").replace("{a}",$("#preSel").value).replace("{b}",$("#postSel").value).replace("{n}",count).replace("{d}",fmt(d)),[
-    {label:t("hlOne"),pri:true,fn:()=>setTimeout(()=>saveJoined(parts,"highlight"),0)},
-    {label:t("hlEach"),fn:()=>setTimeout(()=>saveParts(parts,"highlight"),0)},
-    {label:t("hlTimeline"),fn:async()=>{ snapshot(); clearRange(); sources.forEach(x=>x.video.classList.remove("on")); segs=parts; cur=0; selected=0; await activate(0,segs[0].start); refresh(); }},
-    {label:t("cancel")}]);
+  sources.forEach(x=>x.video.classList.remove("on"));
+  if(preview){ segs=preview.segs; preview=null; }
+  else{
+    const {parts}=highlightParts(); if(!parts.length){ toast(t("markNeed")); refresh(); return; }
+    preview={segs:segs}; segs=parts;
+  }
+  cur=0; selected=-1; clearRange(); await activate(0,segs[0].start); refresh();
+  if(preview) startPlay();
 };
 
 /* ===== 撮影日時順 ===== */
@@ -778,7 +935,7 @@ $("#snapBtn").onclick=()=>{
 };
 
 /* ===== 音声のオン／オフ ===== */
-function renderMute(){ $("#muteIc").textContent=muted?"🔇":"🔊"; $("#muteLbl").textContent=t(muted?"soundOff":"soundOn"); $("#muteBtn").classList.toggle("on",muted); }
+function renderMute(){ $("#muteIc").innerHTML=ico(muted?"mute":"sound"); $("#muteLbl").textContent=t(muted?"soundOff":"soundOn"); $("#muteBtn").classList.toggle("on",muted); }
 $("#muteBtn").onclick=()=>{ muted=!muted; sources.forEach(x=>x.video.muted=muted); renderMute(); };
 
 $("#lang").onchange=e=>{ lang=e.target.value; try{localStorage.setItem("cj_lang",lang)}catch(_){} applyLang(); };
@@ -788,9 +945,12 @@ function refresh(){
   $("#timeBadge").hidden=$("#segBadge").hidden=!segs.length;
   renderTimeline(); renderList(); updateUI();
   const has=segs.length>0;
-  ["#splitBtn","#markBtn","#exportBtn","#back10","#fwd10","#play","#inBtn","#outBtn","#snapBtn","#speed","#fs"].forEach(s=>$(s).disabled=!has);
-  $("#tlHint").style.display=has?"block":"none"; $("#markChips").style.display=has?"flex":"none";
+  ["#splitBtn","#markBtn","#undoMarkBtn","#previewBtn","#exportBtn","#back10","#fwd10","#play","#inBtn","#outBtn","#snapBtn","#speed","#fs","#newBtn"].forEach(s=>$(s).disabled=!has);
+  $("#tlHint").style.display=has?"block":"none";
+  $("#previewBtn").lastChild.textContent=t(preview?"hlPreviewOff":"hlPreview");
+  $("#splitBtn").disabled=$("#splitBtn").disabled||!!preview;
   $("#rangeDelBtn").disabled=rangeIn===null&&rangeOut===null;
+  $("#hlOneBtn").disabled=$("#hlEachBtn").disabled=!visibleMarks().length&&!preview;
   $("#sortBtn").disabled=segs.length<2;
   renderRange(); renderMute(); renderMarks();
   $("#delBtn").disabled=$("#saveOneBtn").disabled=selected<0;
@@ -800,7 +960,7 @@ function refresh(){
 function renderList(){
   const s=segs[selected];
   $("#selNone").hidden=!!s; $("#selOn").hidden=!s;
-  $("#selBox").style.display=segs.length?"block":"none";
+  $("#selBox").style.display="block";
   if(!s) return;
   const src=srcOf(s);
   $("#selDot").style.background=src.color;
@@ -811,7 +971,7 @@ function renderList(){
 }
 function updateUI(){
   const g=globalTime(), T=total();
-  $("#cur").textContent=fmt(g); $("#tot").textContent=fmt(T);
+  $("#cur").textContent=fmt(g); $("#tot").textContent=fmt(T); $("#fsTime").textContent=`${fmt(g)} / ${fmt(T)}`;
   if(!dragging) movePlayhead(g);
   updateBadges();
 }
@@ -848,11 +1008,42 @@ function pickMime(){
 function openSheet(id){ if(playing){ setPlaying(false); activeVideo().pause(); } $(id).classList.add("show"); }
 function closeSheets(){ document.querySelectorAll(".overlay").forEach(o=>o.classList.remove("show")); }
 document.querySelectorAll(".overlay").forEach(o=>o.addEventListener("click",e=>{ if(e.target===o||e.target.closest("[data-close]")) closeSheets(); }));
-$("#exportBtn").onclick=()=>{ if(segs.length){ renderMarks(); $("#muteChk").checked=muted; openSheet("#saveSheet"); } };
+$("#exportBtn").onclick=()=>{
+  if(!segs.length) return;
+  document.querySelectorAll(".muteChk").forEach(c=>c.checked=muted); renderDate();
+  if(document.body.dataset.mode==="star"){
+    const {parts,count}=highlightParts(); if(preview||!parts.length){ if(!preview){ toast(t("markNeed")); return; } }
+    const ps=preview?segs:parts, d=ps.reduce((a,p)=>a+segLen(p),0);
+    $("#hlSheetDesc").textContent=t("hlText").replace("{a}",hl.pre).replace("{b}",hl.post).replace("{n}",preview?ps.length:count).replace("{d}",fmt(d));
+    openSheet("#hlSheet");
+  } else openSheet("#saveSheet");
+};
+const hlList=()=>preview?segs.slice():highlightParts().parts;
+$("#hlOneBtn").onclick=()=>{ closeSheets(); saveJoined(hlList(),"highlight"); };
+$("#hlEachBtn").onclick=()=>{ closeSheets(); saveParts(hlList(),"highlight"); };
 $("#joinBtn").onclick=()=>{ closeSheets(); saveJoined(segs.map((_,i)=>i)); };
 $("#partsBtn").onclick=()=>{ closeSheets(); saveParts(segs.map((_,i)=>i)); };
 $("#saveOneBtn").onclick=()=>{ if(selected>=0) saveParts([selected]); };
-$("#muteChk").onchange=e=>{ muted=e.target.checked; sources.forEach(x=>x.video.muted=muted); renderMute(); };
+document.querySelectorAll(".muteChk").forEach(c=>c.onchange=e=>{ muted=e.target.checked; sources.forEach(x=>x.video.muted=muted); renderMute(); });
+// 写真アプリでの並び（撮影日のまま／今日の日付）
+let dateNow=(()=>{ try{ return localStorage.getItem("cj_date")==="now"; }catch(e){ return false; } })();
+function renderDate(){ document.querySelectorAll(".datePick button").forEach(b=>{ b.textContent=t(b.dataset.date==="now"?"dateNow":"dateOrig"); b.style.whiteSpace="pre-line"; b.classList.toggle("on",(b.dataset.date==="now")===dateNow); }); }
+document.querySelectorAll(".datePick button").forEach(b=>b.onclick=()=>{ dateNow=b.dataset.date==="now"; try{ localStorage.setItem("cj_date",dateNow?"now":"orig"); }catch(e){} renderDate(); });
+// モード
+function setMode(m){
+  document.body.dataset.mode=m; try{ localStorage.setItem("cj_mode",m); }catch(e){}
+  $("#exportLbl").textContent=t(m==="star"?"saveStar":"saveCut");
+  if(m!=="cut"){ selected=-1; }
+  refresh();
+}
+document.querySelectorAll(".modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+// ぜんぶ消して新しく始める
+function resetAll(){
+  if(playing){ setPlaying(false); }
+  sources.forEach(x=>{ try{ x.video.pause(); x.video.removeAttribute("src"); x.video.load(); }catch(e){} x.video.remove(); URL.revokeObjectURL(x.url); });
+  sources=[]; segs=[]; history=[]; cur=0; selected=-1; preview=null; markStack.length=0; clearRange(); setFs(false); refresh();
+}
+$("#newBtn").onclick=()=>{ if(confirm(t("startOverQ"))) resetAll(); };
 $("#helpBtn").onclick=()=>openSheet("#helpSheet");
 $("#slowBtn").onclick=e=>{ e.stopPropagation(); showModal(t("slowTitle"),t("slowText"),[{label:t("close")}]); };
 
@@ -866,7 +1057,7 @@ function fastable(indices){
 }
 function buildFile(indices,name){
   const parts=indices.map(i=>{ const s=L(i); return {m:srcOf(s).mp4,start:s.start,end:s.end}; });
-  const r=MP4Cut.build(parts,{mute:muted});
+  const r=MP4Cut.build(parts,{mute:muted,dateNow});
   return new File([r.blob],`${name}.${r.ext}`,{type:r.mime});
 }
 function saveJoined(indices,tag){
@@ -1014,9 +1205,9 @@ function toast(msg){ const c=$("#centerIcon"); c.classList.add("msg"); c.textCon
 
 /* ===== 起動 ===== */
 $("#supportLink").href=SUPPORT_URL;
-fillSel($("#preSel"),[3,5,10,15,20,30],"cj_pre",10); fillSel($("#postSel"),[3,5,10,15,20],"cj_post",5);
+setPlaying(false);
 if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
-applyLang(); refresh();
+applyLang(); setMode((()=>{ try{ return localStorage.getItem("cj_mode")||"watch"; }catch(e){ return "watch"; } })());
 try{ if(!localStorage.getItem("cj_help")){ localStorage.setItem("cj_help","1"); openSheet("#helpSheet"); } }catch(e){}
 if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
 // テスト用フック
