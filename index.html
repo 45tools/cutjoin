@@ -205,30 +205,30 @@ const SKIP = 10;
 
 /* ===== 多言語 ===== */
 const I18N = {
- ja:{emptyTitle:"スマホで撮った動画を選んでください",loading:"読み込み中…",emptySub:"複数選ぶと順番につながります",addVideo:"動画を選ぶ",
+ ja:{emptyTitle:"スマホで撮った動画を選んでください",loading:"読み込み中…",playErr:"再生を開始できませんでした",emptySub:"複数選ぶと順番につながります",addVideo:"動画を選ぶ",
   add:"追加",split:"分割",del:"削除",undo:"元に戻す",moveL:"左へ",moveR:"右へ",parts:"パートごとに保存",inPt:"始点",addMark:"マーカー",markAdded:"★ マーカーを追加しました",pre:"前",post:"後",sec:"秒",hl:"ハイライトを作る",hlTitle:"ハイライト",hlText:"マーカーの前{a}秒〜後{b}秒を切り出します（{n}か所・合計{d}）。",hlOne:"1本にまとめて保存",hlEach:"別々に保存",hlTimeline:"タイムラインをハイライトだけにする",noMarks:"再生中に「★ マーカー」を押すと、ゴールなどの場面に印を付けられます。印はこの端末に記録され、同じ動画を開くと復元されます。",markNeed:"先にマーカーを付けてください",outPt:"終点",rangeDel:"範囲を削除",sortDate:"撮影順",snap:"静止画",soundOn:"音声あり",soundOff:"音声なし",inSet:"始点を設定しました",outSet:"終点を設定しました",rangeNeed:"先に始点か終点を設定してください",sorted:"撮影日時の順に並べました",noDate:"撮影日時が分からない動画は最後に回しました",snapTitle:"静止画を保存",snapText:"表示中の場面を画像にしました。",mutedNote:"（音声なし）",export:"結合して保存",
-  hint:"・画面の右側／左側をダブルタップで10秒送り／戻し、1回タップで再生／停止。\n・「分割」は再生位置のすぐ近くの区切り（キーフレーム。通常1秒以内）で切ります。不要な部分は選んで「削除」。\n・タイムラインをタップ・なぞると移動、ブロックをタップで選択。\n・保存は再エンコードしないので一瞬で終わり、画質も元のままです。「パートごとに保存」は分けた部分を別々の動画にします（各行の ⤓ で1つだけ保存も可）。\n・撮影設定（解像度など）が違う動画どうしを結合するときだけ、再生しながら書き出す互換モードになります。\n・「始点」「終点」で範囲を決めて「範囲を削除」で、休憩など不要な時間をまとめて消せます（片方だけなら最初／最後まで）。\n・「撮影順」で撮った順に並べ替え。「静止画」は表示中の場面を画像で保存。「音声」をオフにすると音なしで保存します。\n・「★ マーカー」で印を付けて「ハイライトを作る」と、印の前後をまとめた動画をすぐ作れます。",
+  hint:"・画面の右側／左側をダブルタップで10秒送り／戻し、画面の中央を1回タップで再生／停止。\n・「分割」は再生位置のすぐ近くの区切り（キーフレーム。通常1秒以内）で切ります。不要な部分は選んで「削除」。\n・タイムラインをタップ・なぞると移動、ブロックをタップで選択。\n・保存は再エンコードしないので一瞬で終わり、画質も元のままです。「パートごとに保存」は分けた部分を別々の動画にします（各行の ⤓ で1つだけ保存も可）。\n・撮影設定（解像度など）が違う動画どうしを結合するときだけ、再生しながら書き出す互換モードになります。\n・「始点」「終点」で範囲を決めて「範囲を削除」で、休憩など不要な時間をまとめて消せます（片方だけなら最初／最後まで）。\n・「撮影順」で撮った順に並べ替え。「静止画」は表示中の場面を画像で保存。「音声」をオフにすると音なしで保存します。\n・「★ マーカー」で印を付けて「ハイライトを作る」と、印の前後をまとめた動画をすぐ作れます。",
   support:"☕ このアプリを応援する",fastTitle:"保存の準備ができました",fastText:"再エンコードしていないので画質は元のままです。iPhoneは「写真に保存」→「ビデオを保存」で写真アプリに入ります。",savePhotos:"写真に保存／共有",saveFiles:"ファイルに保存",compatTitle:"高速保存できない組み合わせです",compatText:"撮影設定（解像度・コーデックなど）が違う動画が混ざっています。互換モードなら保存できますが、再生しながら書き出すため動画と同じ時間がかかります。",compatGo:"互換モードで保存",parseFail:"この動画は高速保存に対応していない形式のため、互換モードで保存します。",clip:"クリップ",exporting:"書き出し中…",exportText:"再生しながら書き出しています。画面を閉じたりアプリを切り替えたりしないでください。",
   cancel:"中止",done:"完了",saved:"保存できました",savedText:"ファイルをダウンロードしました。iPhoneは「ファイル」アプリ→保存したファイルを開き、共有ボタン→「ビデオを保存」で写真に入ります。",
   share:"共有／保存",close:"閉じる",noExport:"この端末のブラウザは書き出しに対応していません。Safari（iOS 14.3以降）またはChromeをお使いください。",
   leave:"編集中の内容は保存されません。移動しますか？",errLoad:"この動画は読み込めませんでした：",tooShort:"端に近すぎて分割できません"},
- en:{emptyTitle:"Pick videos you shot on your phone",loading:"Loading…",emptySub:"Select several to join them in order",addVideo:"Choose videos",
+ en:{emptyTitle:"Pick videos you shot on your phone",loading:"Loading…",playErr:"Could not start playback",emptySub:"Select several to join them in order",addVideo:"Choose videos",
   add:"Add",split:"Split",del:"Delete",undo:"Undo",moveL:"Left",moveR:"Right",parts:"Save each part",inPt:"In",addMark:"Marker",markAdded:"★ Marker added",pre:"Before ",post:"After ",sec:"s",hl:"Make highlights",hlTitle:"Highlights",hlText:"Cuts {a}s before to {b}s after each marker ({n} scenes, {d} total).",hlOne:"Save as one video",hlEach:"Save separately",hlTimeline:"Keep only highlights in timeline",noMarks:"Tap \"★ Marker\" while playing to mark scenes like goals. Markers are kept on this device and come back when you open the same video.",markNeed:"Add a marker first",outPt:"Out",rangeDel:"Delete range",sortDate:"By date",snap:"Still",soundOn:"Sound on",soundOff:"Muted",inSet:"In point set",outSet:"Out point set",rangeNeed:"Set an In or Out point first",sorted:"Sorted by date shot",noDate:"Videos without a shooting date were put last",snapTitle:"Save still image",snapText:"The current frame was captured as an image.",mutedNote:" (no sound)",export:"Join & save",
-  hint:"• Double-tap right/left side to skip ±10s; single tap to play/pause.\n• \"Split\" cuts at the nearest keyframe to the playhead (usually within 1s). Select unwanted parts and \"Delete\".\n• Tap or drag the timeline to seek; tap a block to select it.\n• Saving is instant with no re-encoding, so quality is untouched. \"Save each part\" makes a separate video per part (or tap ⤓ on a row).\n• Only when joining videos shot with different settings (e.g. resolution) does it fall back to real-time compatibility mode.\n• Set \"In\" and \"Out\", then \"Delete range\" to cut out breaks etc. in one go (only one point = to the start/end).\n• \"By date\" sorts clips in shooting order. \"Still\" saves the current frame as an image. Turn sound off to save without audio.\n• Tap \"★ Marker\" to mark scenes, then \"Make highlights\" to instantly build a video of the moments around them.",
+  hint:"• Double-tap right/left side to skip ±10s; tap the center to play/pause.\n• \"Split\" cuts at the nearest keyframe to the playhead (usually within 1s). Select unwanted parts and \"Delete\".\n• Tap or drag the timeline to seek; tap a block to select it.\n• Saving is instant with no re-encoding, so quality is untouched. \"Save each part\" makes a separate video per part (or tap ⤓ on a row).\n• Only when joining videos shot with different settings (e.g. resolution) does it fall back to real-time compatibility mode.\n• Set \"In\" and \"Out\", then \"Delete range\" to cut out breaks etc. in one go (only one point = to the start/end).\n• \"By date\" sorts clips in shooting order. \"Still\" saves the current frame as an image. Turn sound off to save without audio.\n• Tap \"★ Marker\" to mark scenes, then \"Make highlights\" to instantly build a video of the moments around them.",
   support:"☕ Support this app",fastTitle:"Ready to save",fastText:"No re-encoding, so quality is unchanged. On iPhone: \"Save to Photos\" → \"Save Video\".",savePhotos:"Save to Photos / Share",saveFiles:"Save to Files",compatTitle:"Can't fast-save this mix",compatText:"These videos were shot with different settings (resolution, codec…). Compatibility mode can still save them, but it records in real time and takes as long as the video.",compatGo:"Use compatibility mode",parseFail:"This video format can't be fast-saved, so compatibility mode will be used.",clip:"Clip",exporting:"Exporting…",exportText:"Recording while playing. Don't close the screen or switch apps.",
   cancel:"Cancel",done:"Done",saved:"Saved",savedText:"The file was downloaded. On iPhone: Files app → open it → Share → \"Save Video\" to add it to Photos.",
   share:"Share / Save",close:"Close",noExport:"This browser can't export. Please use Safari (iOS 14.3+) or Chrome.",
   leave:"Your edits will be lost. Leave?",errLoad:"Couldn't load this video: ",tooShort:"Too close to an edge to split"},
- zh:{emptyTitle:"请选择用手机拍摄的视频",loading:"加载中…",emptySub:"选择多个会按顺序拼接",addVideo:"选择视频",
+ zh:{emptyTitle:"请选择用手机拍摄的视频",loading:"加载中…",playErr:"无法开始播放",emptySub:"选择多个会按顺序拼接",addVideo:"选择视频",
   add:"添加",split:"分割",del:"删除",undo:"撤销",moveL:"左移",moveR:"右移",parts:"分别保存",inPt:"起点",addMark:"标记",markAdded:"★ 已添加标记",pre:"前",post:"后",sec:"秒",hl:"制作精彩片段",hlTitle:"精彩片段",hlText:"截取每个标记前{a}秒到后{b}秒（{n}处，共{d}）。",hlOne:"合并为一个视频保存",hlEach:"分别保存",hlTimeline:"时间轴只保留精彩片段",noMarks:"播放时点“★ 标记”，可以给进球等场面做记号。标记保存在本设备中，再次打开同一视频时会恢复。",markNeed:"请先添加标记",outPt:"终点",rangeDel:"删除范围",sortDate:"按拍摄时间",snap:"截图",soundOn:"有声音",soundOff:"静音",inSet:"已设置起点",outSet:"已设置终点",rangeNeed:"请先设置起点或终点",sorted:"已按拍摄时间排序",noDate:"无拍摄时间的视频已排在最后",snapTitle:"保存截图",snapText:"已将当前画面保存为图片。",mutedNote:"（无声音）",export:"合并并保存",
-  hint:"・双击画面右侧／左侧快进／快退10秒，单击播放／暂停。\n・“分割”在播放位置附近的关键帧切开（通常1秒以内）。选中不需要的部分后“删除”。\n・点按或拖动时间轴跳转，点按片段可选中。\n・保存不重新编码，瞬间完成，画质不变。“分别保存”把每个部分存为单独的视频（也可点每行的 ⤓）。\n・只有合并拍摄设置（分辨率等）不同的视频时，才会使用边播放边录制的兼容模式。\n・用“起点”“终点”选定范围后点“删除范围”，可一次删掉休息等不需要的部分（只设一个则到开头／结尾）。\n・“按拍摄时间”按拍摄顺序排列。“截图”把当前画面存为图片。关闭“声音”则保存为无声视频。\n・用“★ 标记”做记号后点“制作精彩片段”，可立即生成记号前后场面的视频。",
+  hint:"・双击画面右侧／左侧快进／快退10秒，单击中央播放／暂停。\n・“分割”在播放位置附近的关键帧切开（通常1秒以内）。选中不需要的部分后“删除”。\n・点按或拖动时间轴跳转，点按片段可选中。\n・保存不重新编码，瞬间完成，画质不变。“分别保存”把每个部分存为单独的视频（也可点每行的 ⤓）。\n・只有合并拍摄设置（分辨率等）不同的视频时，才会使用边播放边录制的兼容模式。\n・用“起点”“终点”选定范围后点“删除范围”，可一次删掉休息等不需要的部分（只设一个则到开头／结尾）。\n・“按拍摄时间”按拍摄顺序排列。“截图”把当前画面存为图片。关闭“声音”则保存为无声视频。\n・用“★ 标记”做记号后点“制作精彩片段”，可立即生成记号前后场面的视频。",
   support:"☕ 支持这个应用",fastTitle:"已准备好保存",fastText:"未重新编码，画质保持原样。iPhone：“存到照片”→“存储视频”。",savePhotos:"存到照片／分享",saveFiles:"存到文件",compatTitle:"无法快速保存此组合",compatText:"混有拍摄设置（分辨率、编码等）不同的视频。兼容模式可以保存，但需边播放边录制，耗时与视频长度相同。",compatGo:"用兼容模式保存",parseFail:"此视频格式不支持快速保存，将使用兼容模式。",clip:"片段",exporting:"导出中…",exportText:"正在边播放边录制。请不要关闭画面或切换应用。",
   cancel:"取消",done:"完成",saved:"已保存",savedText:"文件已下载。iPhone：在“文件”App中打开→分享→“存储视频”即可存入照片。",
   share:"分享／保存",close:"关闭",noExport:"此浏览器不支持导出。请使用 Safari（iOS 14.3以上）或 Chrome。",
   leave:"编辑内容将丢失，确定离开吗？",errLoad:"无法读取此视频：",tooShort:"太靠近边缘，无法分割"},
- "zh-Hant":{emptyTitle:"請選擇用手機拍攝的影片",loading:"載入中…",emptySub:"選擇多個會按順序拼接",addVideo:"選擇影片",
+ "zh-Hant":{emptyTitle:"請選擇用手機拍攝的影片",loading:"載入中…",playErr:"無法開始播放",emptySub:"選擇多個會按順序拼接",addVideo:"選擇影片",
   add:"新增",split:"分割",del:"刪除",undo:"復原",moveL:"左移",moveR:"右移",parts:"分別儲存",inPt:"起點",addMark:"標記",markAdded:"★ 已新增標記",pre:"前",post:"後",sec:"秒",hl:"製作精彩片段",hlTitle:"精彩片段",hlText:"擷取每個標記前{a}秒到後{b}秒（{n}處，共{d}）。",hlOne:"合併為一個影片儲存",hlEach:"分別儲存",hlTimeline:"時間軸只保留精彩片段",noMarks:"播放時點「★ 標記」，可以給進球等場面做記號。標記儲存在本裝置中，再次開啟同一影片時會恢復。",markNeed:"請先新增標記",outPt:"終點",rangeDel:"刪除範圍",sortDate:"按拍攝時間",snap:"截圖",soundOn:"有聲音",soundOff:"靜音",inSet:"已設定起點",outSet:"已設定終點",rangeNeed:"請先設定起點或終點",sorted:"已按拍攝時間排序",noDate:"無拍攝時間的影片已排在最後",snapTitle:"儲存截圖",snapText:"已將當前畫面儲存為圖片。",mutedNote:"（無聲音）",export:"合併並儲存",
-  hint:"・雙擊畫面右側／左側快進／快退10秒，單擊播放／暫停。\n・「分割」在播放位置附近的關鍵幀切開（通常1秒以內）。選中不需要的部分後「刪除」。\n・點按或拖動時間軸跳轉，點按片段可選中。\n・儲存不重新編碼，瞬間完成，畫質不變。「分別儲存」把每個部分存為單獨的影片（也可點每行的 ⤓）。\n・只有合併拍攝設定（解析度等）不同的影片時，才會使用邊播放邊錄製的相容模式。\n・用「起點」「終點」選定範圍後點「刪除範圍」，可一次刪掉休息等不需要的部分（只設一個則到開頭／結尾）。\n・「按拍攝時間」按拍攝順序排列。「截圖」把當前畫面存為圖片。關閉「聲音」則儲存為無聲影片。\n・用「★ 標記」做記號後點「製作精彩片段」，可立即生成記號前後場面的影片。",
+  hint:"・雙擊畫面右側／左側快進／快退10秒，單擊中央播放／暫停。\n・「分割」在播放位置附近的關鍵幀切開（通常1秒以內）。選中不需要的部分後「刪除」。\n・點按或拖動時間軸跳轉，點按片段可選中。\n・儲存不重新編碼，瞬間完成，畫質不變。「分別儲存」把每個部分存為單獨的影片（也可點每行的 ⤓）。\n・只有合併拍攝設定（解析度等）不同的影片時，才會使用邊播放邊錄製的相容模式。\n・用「起點」「終點」選定範圍後點「刪除範圍」，可一次刪掉休息等不需要的部分（只設一個則到開頭／結尾）。\n・「按拍攝時間」按拍攝順序排列。「截圖」把當前畫面存為圖片。關閉「聲音」則儲存為無聲影片。\n・用「★ 標記」做記號後點「製作精彩片段」，可立即生成記號前後場面的影片。",
   support:"☕ 支援這個應用",fastTitle:"已準備好儲存",fastText:"未重新編碼，畫質保持原樣。iPhone：「存到照片」→「儲存影片」。",savePhotos:"存到照片／分享",saveFiles:"存到檔案",compatTitle:"無法快速儲存此組合",compatText:"混有拍攝設定（解析度、編碼等）不同的影片。相容模式可以儲存，但需邊播放邊錄製，耗時與影片長度相同。",compatGo:"用相容模式儲存",parseFail:"此影片格式不支援快速儲存，將使用相容模式。",clip:"片段",exporting:"匯出中…",exportText:"正在邊播放邊錄製。請不要關閉畫面或切換應用。",
   cancel:"取消",done:"完成",saved:"已儲存",savedText:"檔案已下載。iPhone：在「檔案」App中開啟→分享→「儲存影片」即可存入照片。",
   share:"分享／儲存",close:"關閉",noExport:"此瀏覽器不支援匯出。請使用 Safari（iOS 14.3以上）或 Chrome。",
@@ -281,11 +281,12 @@ $("#file").onchange=async e=>{
   if(!files.length) return;
   snapshot(); clearRange();
   const wasEmpty=!segs.length;
-  for(const f of files){
-    $("#empty .big").textContent=t("loading")+" "+f.name;
-    try{ const src=await loadSource(f); segs.push({id:uid++,src:src.id,start:0,end:src.duration}); }
-    catch(err){ alert(t("errLoad")+f.name+"\n("+(err&&err.message||"")+")"); }
-  }
+  let done=0; const show=()=>{ $("#empty .big").textContent=`${t("loading")} ${done}/${files.length}`; }; show();
+  const results=await Promise.allSettled(files.map(f=>loadSource(f).finally(()=>{ done++; show(); })));
+  results.forEach((r,i)=>{
+    if(r.status==="fulfilled") segs.push({id:uid++,src:r.value.id,start:0,end:r.value.duration});
+    else alert(t("errLoad")+files[i].name+"\n("+(r.reason&&r.reason.message||"")+")");
+  });
   $("#empty .big").textContent=t("emptyTitle");
   if(wasEmpty && segs.length){ cur=0; selected=0; await activate(0,segs[0].start); }
   refresh();
@@ -304,7 +305,7 @@ async function loadSource(file){
     let done=false; const fin=x=>{ if(!done){ done=true; res(x); } };
     v.addEventListener("loadedmetadata",()=>fin("ok"),{once:true});
     v.addEventListener("error",()=>fin("error"),{once:true});
-    setTimeout(()=>fin("timeout"),6000);
+    setTimeout(()=>fin("timeout"),mp4?300:6000); // MP4/MOVは自前の解析で長さが分かるので待たない
   });
   let dur=(meta==="ok"&&isFinite(v.duration)&&v.duration>0)?v.duration:NaN;
   if(!isFinite(dur)&&mp4&&meta!=="error") dur=mp4.duration;
@@ -325,21 +326,17 @@ async function loadSource(file){
   return src;
 }
 function makeThumb(src){
-  // 1枚目のフレームを取ってタイムラインに表示
-  const v=document.createElement("video");
-  v.muted=true; v.playsInline=true; v.preload="auto"; v.setAttribute("playsinline","");
-  v.style.cssText="position:fixed;left:-10px;top:0;width:2px;height:2px;opacity:0;pointer-events:none";
-  document.body.appendChild(v); v.src=src.url; try{ v.load(); }catch(e){}
-  setTimeout(()=>v.remove(),15000);
-  v.onloadeddata=()=>{ v.currentTime=Math.min(0.5,src.duration/2); };
-  v.onseeked=()=>{
+  // 本体の動画に最初の映像が届いたら、そのコマをタイムライン用に縮小して使う（2本目の動画は開かない）
+  const v=src.video;
+  const grab=()=>{
     try{
+      if(!v.videoWidth) return;
       const c=document.createElement("canvas"); const w=160, h=Math.round(160*(v.videoHeight/v.videoWidth||9/16));
       c.width=w; c.height=h; c.getContext("2d").drawImage(v,0,0,w,h);
-      src.thumb=c.toDataURL("image/jpeg",.6); renderTimeline();
+      src.thumb=c.toDataURL("image/jpeg",.6); src.w=v.videoWidth; src.h=v.videoHeight; renderTimeline();
     }catch(e){}
-    v.removeAttribute("src"); v.load();
   };
+  if(v.readyState>=2) grab(); else v.addEventListener("loadeddata",grab,{once:true});
 }
 
 /* ===== 再生制御 ===== */
@@ -395,16 +392,33 @@ async function seekGlobal(g){
 function setPlaying(p){
   playing=p; $("#play").textContent=p?"❚❚":"▶";
 }
-async function togglePlay(){
+// iPhoneは「タップの処理の中で」始めた再生しか許さないため、待ち処理を挟まずに play() を呼ぶ
+function togglePlay(){
   if(!segs.length) return;
   const v=activeVideo();
-  if(playing){ setPlaying(false); v.pause(); }
-  else{
-    if(globalTime()>=total()-0.1) await seekGlobal(0);
-    setPlaying(true);
-    try{ await activeVideo().play(); }catch(e){ setPlaying(false); }
+  if(playing){ setPlaying(false); v.pause(); flashCenter("❚❚"); return; }
+  if(globalTime()>=total()-0.1){ // 最後まで再生済みなら先頭へ（同期的に切り替え）
+    const s0=segs[0], v0=srcOf(s0).video;
+    if(v!==v0){ v.pause(); v.classList.remove("on"); }
+    cur=0; v0.classList.add("on"); try{ v0.currentTime=s0.start; }catch(e){}
   }
-  flashCenter(playing?"▶":"❚❚");
+  startPlay();
+}
+function startPlay(){
+  const v=activeVideo(); if(!v) return;
+  setPlaying(true); v.playbackRate=rate; v._unlocked=true;
+  const p=v.play();
+  if(p&&p.catch) p.catch(e=>{ if(activeVideo()===v){ setPlaying(false); toast(t("playErr")+" ("+e.name+")"); } });
+  unlockOthers(v);
+  flashCenter("▶");
+}
+// 2本目以降の動画も、最初のタップのときに再生許可を得ておく（クリップをまたいだ自動再生のため）
+function unlockOthers(except){
+  sources.forEach(x=>{
+    const o=x.video; if(o===except||o._unlocked) return;
+    o._unlocked=true; const m=o.muted; o.muted=true;
+    try{ const q=o.play(); if(q&&q.then) q.then(()=>{ if(o!==activeVideo()||!playing) o.pause(); o.muted=m; }).catch(()=>{ o.muted=m; o._unlocked=false; }); }catch(e){ o.muted=m; }
+  });
 }
 $("#play").onclick=togglePlay;
 $("#back10").onclick=()=>skip(-SKIP);
@@ -427,8 +441,7 @@ stage.addEventListener("pointerup",e=>{
   const r=stage.getBoundingClientRect(); const x=e.clientX-r.left;
   const side = x<r.width*0.4?"l": x>r.width*0.6?"r":"c";
   const now=performance.now();
-  if(now-lastTap.t<300 && side===lastTap.side && side!=="c"){
-    clearTimeout(tapTimer); tapTimer=null;
+  if(now-lastTap.t<350 && side===lastTap.side && side!=="c"){
     chain++; skip(side==="r"?SKIP:-SKIP);
     showRippleCount(side,chain);
     lastTap={t:now,side};
@@ -436,8 +449,7 @@ stage.addEventListener("pointerup",e=>{
   }
   chain=0;
   lastTap={t:now,side};
-  clearTimeout(tapTimer);
-  tapTimer=setTimeout(()=>{ tapTimer=null; togglePlay(); },side==="c"?0:280);
+  if(side==="c") togglePlay();   // 待たずに実行（iPhoneの再生許可のため）
 });
 stage.addEventListener("dblclick",e=>e.preventDefault());
 function ripple(side){
