@@ -58,6 +58,9 @@ body[data-mode="watch"] .pane[data-pane="watch"],body[data-mode="cut"] .pane[dat
 #centerIcon{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);min-width:64px;height:64px;border-radius:32px;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;font-size:28px;opacity:0;transition:opacity .3s;pointer-events:none;padding:0 18px;white-space:nowrap;z-index:6}
 #centerIcon.msg{font-size:14px;font-weight:700}
 #centerIcon.show{opacity:1}
+#holdBadge{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(0,0,0,.65);border-radius:16px;padding:5px 14px;font-weight:800;font-size:15px;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:6}
+#holdBadge.show{opacity:1}
+#holdBadge .ic{width:18px;height:18px}
 #timeBadge{position:absolute;left:10px;top:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:10px;font-variant-numeric:tabular-nums;font-size:13px;pointer-events:none}
 #segBadge{position:absolute;right:10px;top:10px;background:rgba(0,0,0,.6);padding:4px 10px;border-radius:10px;font-size:12px;pointer-events:none}
 /* アプリ内の全画面 */
@@ -219,6 +222,7 @@ body[data-mode="watch"] .savebar{display:none}
     <div class="ripple l" id="rl"><span>« 10s</span></div>
     <div class="ripple r" id="rr"><span>10s »</span></div>
     <div id="centerIcon"></div>
+    <div id="holdBadge">2x <i class="ic" data-ic="ff"></i></div>
     <div id="timeBadge" hidden></div>
     <div id="segBadge" hidden></div>
     <div id="fsBar">
@@ -399,6 +403,7 @@ const ICONS={
  split:'<rect x="3" y="8" width="7" height="8" rx="2"/><rect x="14" y="8" width="7" height="8" rx="2"/><path d="M12 6v12" stroke-dasharray="2 2.2"/>',
  refresh:'<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.6 4.6v3.8h-3.8"/>',
  x:'<path d="M7 7l10 10M17 7 7 17"/>',
+ ff:'<path d="M4 6.5v11l7-5.5zM12.5 6.5v11l7-5.5z" fill="currentColor"/>',
 };
 const ico=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||""}</svg>`;
 function fillIcons(root=document){ root.querySelectorAll("[data-ic]").forEach(el=>{ el.innerHTML=ico(el.dataset.ic); }); }
@@ -523,6 +528,7 @@ async function loadSource(file){
   const saved=mkAll()[src.key]; src.markers=saved?saved.t.slice():[];
   sources.push(src);
   v.addEventListener("timeupdate",()=>onTime(src));
+  v.addEventListener("pause",()=>{ if(playing&&v===activeVideo()&&!v.ended&&!advancing) setPlaying(false); });
   v.addEventListener("ended",()=>onEnded(src));
   makeThumb(src);
   return src;
@@ -609,11 +615,27 @@ function togglePlay(){
 }
 function startPlay(){
   const v=activeVideo(); if(!v) return;
+  // バックグラウンドから戻って動画が使えなくなっていたら、その場で読み込み直す（タップの処理内なので再生も許可される）
+  if(v.error||v.readyState===0&&v.networkState!==2){ const s=segs[cur], tgt=Math.max(s?s.start:0,v.currentTime||0); try{ v.load(); v.currentTime=tgt; }catch(e){} }
   setPlaying(true); v.playbackRate=rate; v._unlocked=true;
   const p=v.play();
   if(p&&p.catch) p.catch(e=>{ if(activeVideo()===v){ setPlaying(false); toast(t("playErr")+" ("+e.name+")"); } });
   unlockOthers(v);
   flashCenter(ico("play"));
+}
+// 別のアプリへ切り替えたら止めておき、戻ったら動画の状態を確かめて立て直す
+let resumeAt=null;
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden){ endHold(); if(segs.length) resumeAt=globalTime(); if(playing) setPlaying(false); sources.forEach(x=>{ try{ x.video.pause(); }catch(e){} }); }
+  else recoverMedia();
+});
+window.addEventListener("pageshow",e=>{ if(e.persisted) recoverMedia(); });
+async function recoverMedia(){
+  if(!segs.length) return;
+  sources.forEach(x=>{ const v=x.video; v._unlocked=false; if(v.error||v.readyState===0){ try{ const t=v.currentTime; v.load(); v.currentTime=t; }catch(e){} } });
+  setPlaying(false);
+  if(resumeAt!==null){ const g=resumeAt; resumeAt=null; await seekGlobal(g); }
+  updateUI();
 }
 // 2本目以降の動画も、最初のタップのときに再生許可を得ておく（クリップをまたいだ自動再生のため）
 function unlockOthers(except){
@@ -663,16 +685,46 @@ function stageTap(clientX){
 }
 // タッチは touchend で処理して既定動作（ダブルタップ拡大）を止める。マウスは pointerup。
 let touchStart=null;
-stage.addEventListener("touchstart",e=>{ const p=e.changedTouches[0]; touchStart={x:p.clientX,y:p.clientY}; },{passive:true});
+// 長押しで2倍速（指を離すと元の速さに戻る）
+let holdTimer=null, holding=false, holdPrevRate=1;
+function startHold(){
+  if(!segs.length||exporting) return;
+  holding=true; holdPrevRate=rate; rate=2;
+  const v=activeVideo(); if(v) v.playbackRate=2;
+  if(!playing) startPlay();
+  $("#holdBadge").classList.add("show");
+  if(document.body.classList.contains("fsmode")) showFsBar();
+}
+function endHold(){
+  clearTimeout(holdTimer); holdTimer=null;
+  if(!holding) return false;
+  holding=false; rate=holdPrevRate; const v=activeVideo(); if(v) v.playbackRate=rate;
+  $("#holdBadge").classList.remove("show");
+  return true;
+}
+const onStageEl=t=>!(t.closest("#empty")||t.closest("#fsBar"));
+stage.addEventListener("touchstart",e=>{
+  const p=e.changedTouches[0]; touchStart={x:p.clientX,y:p.clientY};
+  if(e.touches.length===1&&onStageEl(e.target)){ clearTimeout(holdTimer); holdTimer=setTimeout(startHold,450); }
+},{passive:true});
+stage.addEventListener("touchmove",e=>{
+  const p=e.changedTouches[0];
+  if(!holding&&touchStart&&Math.hypot(p.clientX-touchStart.x,p.clientY-touchStart.y)>12){ clearTimeout(holdTimer); holdTimer=null; }
+},{passive:true});
+stage.addEventListener("touchcancel",()=>endHold());
 stage.addEventListener("touchend",e=>{
-  if(e.target.closest("#empty")||e.target.closest("#fsBar")) return;   // 「動画を選ぶ」ボタンなどは通常どおり
+  if(!onStageEl(e.target)) return;   // 「動画を選ぶ」ボタンなどは通常どおり
   e.preventDefault();
+  if(endHold()) return;              // 長押しのあとはタップとして扱わない
+  clearTimeout(holdTimer); holdTimer=null;
   const p=e.changedTouches[0];
   if(touchStart&&Math.hypot(p.clientX-touchStart.x,p.clientY-touchStart.y)>12) return; // なぞっただけ
   stageTap(p.clientX);
 },{passive:false});
 $("#fsBar").addEventListener("touchend",e=>e.stopPropagation());
-stage.addEventListener("pointerup",e=>{ if(e.pointerType!=="touch"&&!e.target.closest("#empty")&&!e.target.closest("#fsBar")) stageTap(e.clientX); });
+stage.addEventListener("pointerdown",e=>{ if(e.pointerType!=="touch"&&onStageEl(e.target)){ clearTimeout(holdTimer); holdTimer=setTimeout(startHold,450); } });
+stage.addEventListener("pointerup",e=>{ if(e.pointerType!=="touch"&&onStageEl(e.target)){ if(endHold()) return; clearTimeout(holdTimer); stageTap(e.clientX); } });
+stage.addEventListener("pointerleave",e=>{ if(e.pointerType!=="touch") endHold(); });
 // 連打するボタンも touchend で即実行（拡大させない・取りこぼさない）
 function fastTap(el,fn){
   el.addEventListener("touchend",e=>{ e.preventDefault(); if(!el.disabled) fn(); },{passive:false});
