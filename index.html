@@ -94,8 +94,18 @@ body[data-mode="watch"] .modes [data-mode="watch"],body[data-mode="cut"] .modes 
 #fsBar{display:none}
 body.fsmode{overflow:hidden}
 body.fsmode #stage{position:fixed;inset:0;z-index:70;border-radius:0;aspect-ratio:auto;width:100vw;height:100vh;height:100dvh}
-body.fsmode #fsBar{display:flex;position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));gap:8px;align-items:center;background:linear-gradient(transparent,rgba(0,0,0,.75));z-index:5;transition:opacity .3s}
-body.fsmode #fsBar.hide{opacity:0;pointer-events:none}
+body.fsmode #fsBar{display:flex;position:absolute;left:0;right:0;bottom:0;padding:14px 16px calc(14px + env(safe-area-inset-bottom));gap:8px;align-items:center;z-index:5}
+body.fsmode #fsBar.hide{opacity:1;pointer-events:auto}
+body.fsmode #stage video{top:0;bottom:auto;height:calc(100% - 92px - env(safe-area-inset-bottom))}
+body.fsmode #fsBar{z-index:8}
+body.fsmode #fsBar{background:#0E1913;padding-top:24px}
+body.fsmode #empty,body.fsmode .ripple{bottom:calc(92px + env(safe-area-inset-bottom))}
+#fsProg{position:absolute;left:16px;right:16px;top:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.18);touch-action:none}
+#fsProg .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#58C389}
+#fsProg .fmk{position:absolute;top:-5px;width:12px;height:18px;margin-left:-6px;color:#FFE14D;font-size:13px;line-height:18px;text-align:center;pointer-events:none}
+body.fsmode #fsBar #fsStar{width:auto;padding:0 14px;gap:6px;background:#FFE14D;border-color:#FFE14D;color:#13241A;font-weight:700;font-size:15px}
+body.fsmode #fsBar .t{white-space:nowrap;font-size:17px}
+@media (max-width:420px){body.fsmode #fsBar{gap:6px;padding-left:10px;padding-right:10px} body.fsmode #fsBar button{width:42px}}
 #fsBar button{width:46px;height:46px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
 #fsBar #fsPlay{background:#1C6A43;border-color:#1C6A43}
 #fsBar #fsStar{color:var(--star)}
@@ -236,12 +246,13 @@ body.empty .dockbar{display:none!important}
       <div id="timeBadge" hidden></div>
       <div id="segBadge" hidden></div>
       <div id="fsBar">
-        <button id="fsExit" aria-label="exit full screen"><i class="ic" data-ic="shrink"></i></button>
+        <div id="fsProg"><div class="fill" id="fsFill"></div></div>
+      <button id="fsExit" aria-label="exit full screen"><i class="ic" data-ic="shrink"></i></button>
         <button id="fsBack" aria-label="-10s"><i class="ic" data-ic="back10"></i></button>
         <button id="fsPlay" aria-label="play"><i class="ic" data-ic="play"></i></button>
         <button id="fsFwd" aria-label="+10s"><i class="ic" data-ic="fwd10"></i></button>
         <span class="t" id="fsTime">0:00 / 0:00</span>
-        <button id="fsStar" aria-label="mark"><i class="ic" data-ic="star"></i></button>
+        <button id="fsStar" aria-label="mark"><i class="ic" data-ic="star"></i><span data-i="markShort"></span></button>
       </div>
     </div>
   </div>
@@ -285,7 +296,7 @@ body.empty .dockbar{display:none!important}
 <div class="dock">
   <div class="dockbar" id="dockWatch">
     <button class="btn" id="addBtn2"><i class="ic" data-ic="plus"></i><span data-i="addShort"></span></button>
-    <button class="btn" id="snapBtn2"><i class="ic" data-ic="camera"></i><span data-i="snap"></span></button>
+    <button class="btn" id="snapBtn2" style="color:var(--ink)"><i class="ic" data-ic="star" style="color:#E0A100"></i><span data-i="markShort"></span></button>
     <button class="btn primary" id="fs2"><i class="ic" data-ic="expand"></i><span data-i="fsLbl"></span></button>
   </div>
   <div class="dockbar" id="dockCut">
@@ -656,6 +667,11 @@ let fsTimer=null;
 function showFsBar(){ const b=$("#fsBar"); b.classList.remove("hide"); clearTimeout(fsTimer); fsTimer=setTimeout(()=>{ if(playing) b.classList.add("hide"); },3000); }
 $("#fs").onclick=()=>{ if(segs.length) setFs(true); };
 $("#fsExit").onclick=()=>setFs(false);
+(()=>{ const pr=$("#fsProg"); let on=false;
+  const go=e=>{ const r=pr.getBoundingClientRect(); seekGlobal(Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*total()); };
+  pr.addEventListener("pointerdown",e=>{ on=true; pr.setPointerCapture(e.pointerId); go(e); });
+  pr.addEventListener("pointermove",e=>{ if(on) go(e); });
+  pr.addEventListener("pointerup",()=>on=false); pr.addEventListener("pointercancel",()=>on=false); })();
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") setFs(false); });
 
 /* ダブルタップ判定（YouTube風） */
@@ -896,6 +912,8 @@ function renderMarks(){
     box.appendChild(c);
   });
   $("#noMarks").hidden=ms.length>0;
+  $("#fsProg").querySelectorAll(".fmk").forEach(n=>n.remove());
+  ms.forEach(m=>{ const d=document.createElement("div"); d.className="fmk"; d.textContent="★"; d.style.left=(T?m.g/T*100:0)+"%"; $("#fsProg").appendChild(d); });
   timeline.querySelectorAll(".hlband").forEach(n=>n.remove());
   if(document.body.dataset.mode==="star"&&ms.length&&!preview){
     const rs=[]; ms.forEach(m=>{ const a=Math.max(0,m.g-hl.pre), b=Math.min(T,m.g+hl.post); if(rs.length&&a<=rs[rs.length-1][1]) rs[rs.length-1][1]=Math.max(rs[rs.length-1][1],b); else rs.push([a,b]); });
@@ -1028,7 +1046,7 @@ function renderList(){
 }
 function updateUI(){
   const g=globalTime(), T=total();
-  $("#cur").textContent=fmt(g); $("#tot").textContent=fmt(T); $("#fsTime").textContent=`${fmt(g)} / ${fmt(T)}`;
+  $("#cur").textContent=fmt(g); $("#tot").textContent=fmt(T); $("#fsTime").textContent=`${fmt(g)} / ${fmt(T)}`; $("#fsFill").style.width=(T?g/T*100:0)+"%";
   if(!dragging) movePlayhead(g);
   updateBadges();
 }
@@ -1095,7 +1113,7 @@ $("#rangeMenuBtn").onclick=()=>{ if(!segs.length) return; setMode("cut"); docume
 $("#rangeCloseBtn").onclick=()=>{ document.body.classList.remove("ranging"); clearRange(); refresh(); };
 $("#dateMenuBtn").onclick=()=>{ dateNow=!dateNow; try{ localStorage.setItem("cj_date",dateNow?"now":"orig"); }catch(e){} renderDate(); };
 $("#addBtn2").onclick=()=>$("#file").click();
-$("#snapBtn2").onclick=()=>$("#snapBtn").onclick();
+$("#snapBtn2").onclick=()=>addMark();
 $("#fs2").onclick=()=>$("#fs").onclick();
 $("#exportBtn2").onclick=()=>$("#exportBtn").onclick();
 // モード
