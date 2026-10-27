@@ -32,6 +32,9 @@ button,select{font:inherit;color:inherit;cursor:pointer}
 .ic{display:inline-flex;width:20px;height:20px;flex:none}
 .ic svg{width:100%;height:100%}
 button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+/* 下のバーの選択欄は、選んだあとに枠を出さない（枠の端だけが縦線に見えていた） */
+.dockbar select:focus,.dockbar select:focus-visible{outline:none}
+.dockbar .seg.sel:focus-within{background:var(--soft)}
 .wrap{max-width:900px;margin:0 auto;padding:0 0 calc(96px + env(safe-area-inset-bottom))}
 
 /* 上の段（Multiと同じ並び：道具 → 元に戻す → 余白 → メニュー） */
