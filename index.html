@@ -106,7 +106,8 @@ body.fsmode #segBadge{display:none}
 #fsProg{position:absolute;left:16px;right:16px;top:8px;height:8px;border-radius:4px;background:rgba(255,255,255,.18);touch-action:none}
 #fsProg .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:#58C389}
 #fsProg .fmk{position:absolute;top:-5px;width:12px;height:18px;margin-left:-6px;color:#FFE14D;font-size:13px;line-height:18px;text-align:center;pointer-events:none}
-body.fsmode #fsBar #fsStar{width:auto;padding:0 14px;gap:6px;background:#FFE14D;border-color:#FFE14D;color:#13241A;font-weight:700;font-size:15px}
+body.fsmode #fsBar #fsStar .ic{width:28px;height:28px}
+body.fsmode #fsBar #fsStar{width:56px;height:56px;border-radius:28px;padding:0;background:#FFE14D;border-color:#FFE14D;color:#13241A;font-weight:700;font-size:15px}
 body.fsmode #fsBar .t{white-space:nowrap;font-size:17px}
 @media (max-width:420px){body.fsmode #fsBar{gap:6px;padding-left:10px;padding-right:10px} body.fsmode #fsBar button{width:42px}}
 #fsBar button{width:46px;height:46px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;flex:none}
@@ -257,7 +258,7 @@ body.empty .dockbar{display:none!important}
         <button id="fsPlay" aria-label="play"><i class="ic" data-ic="play"></i></button>
         <button id="fsFwd" aria-label="+10s"><i class="ic" data-ic="fwd10"></i></button>
         <span class="t" id="fsTime">0:00 / 0:00</span>
-        <button id="fsStar" aria-label="mark"><i class="ic" data-ic="star"></i><span data-i="markShort"></span></button>
+        <button id="fsStar" aria-label="mark"><i class="ic" data-ic="star"></i></button>
       </div>
     </div>
   </div>
@@ -301,7 +302,7 @@ body.empty .dockbar{display:none!important}
 <div class="dock">
   <div class="dockbar" id="dockWatch">
     <button class="btn" id="addBtn2"><i class="ic" data-ic="plus"></i><span data-i="addShort"></span></button>
-    <button class="btn" id="snapBtn2" style="color:var(--ink)"><i class="ic" data-ic="star" style="color:#E0A100"></i><span data-i="markShort"></span></button>
+    <button class="btn icon" id="snapBtn2" aria-label="mark" style="min-height:44px"><i class="ic" data-ic="star" style="color:#E0A100;width:24px;height:24px"></i></button>
     <button class="btn primary" id="fs2"><i class="ic" data-ic="expand"></i><span data-i="fsLbl"></span></button>
   </div>
   <div class="dockbar" id="dockCut">
@@ -322,7 +323,7 @@ body.empty .dockbar{display:none!important}
     <button class="btn icon" id="rangeCloseBtn" aria-label="close"><i class="ic" data-ic="x"></i></button>
   </div>
   <div class="dockbar" id="dockStar">
-    <button class="btn primary" id="markBtn"><i class="ic" data-ic="star" style="color:var(--star)"></i><span data-i="markShort"></span></button>
+    <button class="btn primary icon" id="markBtn" aria-label="mark" style="width:56px;min-height:44px"><i class="ic" data-ic="star" style="color:var(--star);width:26px;height:26px"></i></button>
     <div class="seg sel">
       <label for="preSel" data-i="preShort"></label><select id="preSel"></select>
       <label for="postSel" data-i="postShort"></label><select id="postSel"></select>
@@ -375,7 +376,7 @@ body.empty .dockbar{display:none!important}
 
 <script src="mp4cut.js"></script>
 <script>
-const APP_VER="2026.10.27-3";
+const APP_VER="2026.10.27-4";
 /* ===== 設定 ===== */
 const SUPPORT_URL = "https://ofuse.me/45tools"; // ← OFUSEのURLに差し替え
 const SKIP = 10;
