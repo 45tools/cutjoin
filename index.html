@@ -52,6 +52,11 @@ button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(
 .seg > * + *{border-left:1px solid var(--line)!important}
 .seg button:disabled{opacity:.4}
 .modes button .ic{width:18px;height:18px}
+/* 狭い画面（iPhone SE・mini・Android 360px など）でもバーを1行に収める */
+.bar .modes{flex:0 1 auto;min-width:0}
+.bar .modes button{min-width:0}
+@media (max-width:400px){.bar{gap:4px;padding-left:8px;padding-right:8px}.bar .modes button{padding:0 6px;gap:3px}.bar .btn.icon{width:40px}}
+@media (max-width:350px){.bar .modes .ic{display:none}.bar .modes button{padding:0 8px}}
 body[data-mode="watch"] .modes [data-mode="watch"],body[data-mode="cut"] .modes [data-mode="cut"],body[data-mode="star"] .modes [data-mode="star"]{background:var(--accent);color:var(--accent-ink);font-weight:700}
 
 /* メニュー（Multiと同じ形） */
@@ -378,7 +383,7 @@ body.empty .dockbar{display:none!important}
 
 <script src="mp4cut.js"></script>
 <script>
-const APP_VER="2026.11.08-3";
+const APP_VER="2026.11.19-1";
 /* 「使い方」の行き先はアプリの言語で切り替える（日本語→note記事、英語→英語版ショート、中国語→繁体字版ショート） */
 const GUIDE_URLS={ja:"https://note.com/45tools/n/nea5883b33112",en:"https://youtube.com/shorts/z_nbx2-bSsg",zh:"https://youtube.com/shorts/eaibtV__Mac","zh-Hant":"https://youtube.com/shorts/eaibtV__Mac"};
 const guideUrl=()=>GUIDE_URLS[lang]||GUIDE_URLS.en;
