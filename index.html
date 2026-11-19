@@ -124,6 +124,7 @@ body.fsmode #fsBar .t{white-space:nowrap;font-size:17px}
 .transport{display:flex;align-items:center;gap:6px;padding:10px 10px 0}
 .transport .btn{min-height:44px}
 .transport .btn.num{font-size:17px}
+@media (max-width:350px){.transport{gap:4px;padding-left:8px;padding-right:8px}.transport .btn.icon{width:40px}.transport #play{width:48px!important}}
 .time{flex:1;text-align:right;white-space:nowrap;font-size:26px}
 .time .tot{font-weight:600;font-size:18px;color:var(--muted)}
 
@@ -383,7 +384,7 @@ body.empty .dockbar{display:none!important}
 
 <script src="mp4cut.js"></script>
 <script>
-const APP_VER="2026.11.19-1";
+const APP_VER="2026.11.19-2";
 /* 「使い方」の行き先はアプリの言語で切り替える（日本語→note記事、英語→英語版ショート、中国語→繁体字版ショート） */
 const GUIDE_URLS={ja:"https://note.com/45tools/n/nea5883b33112",en:"https://youtube.com/shorts/z_nbx2-bSsg",zh:"https://youtube.com/shorts/eaibtV__Mac","zh-Hant":"https://youtube.com/shorts/eaibtV__Mac"};
 const guideUrl=()=>GUIDE_URLS[lang]||GUIDE_URLS.en;
